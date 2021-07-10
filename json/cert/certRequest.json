@@ -1,0 +1,44 @@
+{
+  "anoEje": "2020",
+  "codigoSiaf": "",
+  "dispLegal": "0000",
+  "esCompromiso": "N",
+  "estado": 0,
+  "estadoSolicitud": "",
+  "fechaDocumento": "2021-01-17",
+  "fechaSolicitud": "2021-01-17",
+  "fuenteFinanciamiento": "00",
+  "gloza": "Ninguno",
+  "idSolicitud": 0,
+  "idUnidadResponsable": 1,
+  "intfCer": "",
+  "intfCor": "",
+  "intfSec": "",
+  "moneda": "S/.",
+  "numeroDocumento": "086",
+  "siafCer": "",
+  "solicitudDetalle": [
+    {
+      "clasifniv1": "2",
+      "clasifniv2": "1",
+      "clasifniv3": " 3",
+      "clasifniv4": " 1",
+      "clasifniv5": " 1",
+      "clasifniv6": " 5",
+      "idClasificador": "AB9WWM5",
+      "idSolicitudDetalle": 0,
+      "monto": 10,
+      "secFuncMeta": "0040"
+    }
+  ],
+  "tipoCambio": "1.00",
+  "tipoCertificacion": "9",
+  "tipoDocumento": "086",
+  "tipoOperacion": "N",
+  "tipoSolicitud": ""
+}
+
+
+
+
+

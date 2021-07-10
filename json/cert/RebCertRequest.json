@@ -1,0 +1,37 @@
+{
+  "ano_eje": "2020",
+  "cert_det": [
+    {
+      "clasifniv1": "2",
+      "clasifniv2": "3",
+      "clasifniv3": " 1",
+      "clasifniv4": " 1",
+      "clasifniv5": " 1",
+      "clasifniv6": " 1",
+      "id_clasifi": "ACJJqC1",
+      "monto": "-5.00",
+      "monto_mn": "-5.00",
+      "sec_func": "0083"
+    }
+  ],
+  "cod_doc": "086",
+  "disp_legal": "0000",
+  "es_comp": "N",
+  "estado": "R",
+  "fec_doc": "2020-11-06",
+  "fte_fin": "00",
+  "gloza": "", 
+  "moneda": "S/.",
+  "num_doc": "00008",
+  "sec_ejec": "000996",
+  "t_cambio": "1.00",
+  "tipo_certi": "9",
+  "tipo_ope": "N",
+  "ue_envio": "P",
+  "ue_estado": "N",
+  "ruc":"",
+  "siaf_cer":"0000000539",
+  "intf_cer":"0000000539",
+  "intf_sec":"0001",
+  "intf_cor":"0001"
+}
