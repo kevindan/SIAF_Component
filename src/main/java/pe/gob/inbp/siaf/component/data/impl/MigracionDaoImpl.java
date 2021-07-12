@@ -15,6 +15,7 @@ import com.jacob.com.Variant;
 
 import pe.gob.inbp.siaf.component.data.MigracionDao;
 import pe.gob.inbp.siaf.component.domain.MigracionCertificado;
+import pe.gob.inbp.siaf.component.domain.MigracionRegistroSiaf;
 import pe.gob.inbp.siaf.component.payload.GenericResponse;
 import pe.gob.inbp.siaf.component.utility.AdoUtility;
 import pe.gob.inbp.siaf.component.vfp.Fields;
@@ -45,7 +46,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		List<Error> errores = new ArrayList<Error>();
 		
 		//1. PROCESO DE CARGA DE LOS REGISTROS DE CERTIFICACIÓN
-		Integer cantCert = this.existeCertificados("certificado_compromiso_anual",ano_eje);
+		Integer cantCert = this.existeRegistros("certificado_compromiso_anual",ano_eje);
 		System.out.println("Cantidad de registros entontrados: "+cantCert);
 		if(cantCert > 0) {
 			String secuencialCertificado = this.ultimoRegistroCertificacion(ano_eje);
@@ -70,6 +71,29 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}
 		
 		//2. PROCESO DE CARGA DEL REGISTRO SIAF
+		Integer cantRegSiaf = this.existeRegistros("registro_siaf", ano_eje);
+		System.out.println("Cantidad de registros SIAF entontrados: "+cantRegSiaf);
+		if(cantRegSiaf > 0) {
+			String secuencialSiaf = this.ultimoRegistroSiaf(ano_eje);
+			System.out.println("Secuencial SIAF: "+secuencialSiaf);
+			if(!secuencialSiaf.equals("9000")) {
+				Integer iRespRegSiaf = this.cargarRegistroSiaf(ano_eje, sec_ejec, secuencialSiaf);
+				System.out.println("Estado registro de registro SIAF: "+iRespRegSiaf);
+				if(iRespRegSiaf == -1) {
+					errores.add(new Error("Error al insertar registro de registro SIAF"));
+				}
+			}else {
+				errores.add(new Error("Error al consultar el último secuencial de registros SIAF"));
+			}
+		}else if(cantRegSiaf == 0) {
+			Integer iRespRegSiaf = this.cargarRegistroSiaf(ano_eje, sec_ejec, null);
+			System.out.println("Estado registro de registro SIAF: "+iRespRegSiaf);
+			if(iRespRegSiaf == -1) {
+				errores.add(new Error("Error al insertar registro de registro SIAF"));
+			}			
+		}else if(cantRegSiaf < 0) {
+			errores.add(new Error("Error al consultar existencia de registro SIAF"));
+		}
 		//3. PROCESO DE CARGA DE LAS NOTAS DE MODIFICACION
 		//4. PROCESO DE CARGA DE LA TABLA PRESUPUESTO
 		
@@ -217,6 +241,146 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		return iResp;
 	}
 	
+
+
+	@Override
+	public Integer cargarRegistroSiaf(String ano_eje, String sec_ejec, String secuencial) {
+		Integer iResp = 1;
+		String connectionString = AdoUtility.setConnectionString(folderSiafDataMirror);
+		Short sVariable = 3;
+		String query = "";
+		String sql1 = "SELECT "
+				+ "e.ano_eje, "
+				+ "e.sec_ejec,"
+				+ "e.expediente, "
+				+ "es.secuencia, "
+				+ "es.correlativo,"
+				+ "es.cod_doc,"
+				+ "es.num_doc,"
+				+ "es.fecha_doc,"
+				+ "MONTH(es.fecha_doc) as mes,"
+				+ "DAY(es.fecha_doc) as dia,"
+				+ "ef.fuente_financ,"
+				+ "ef.ruc,"
+				+ "em.sec_func,"
+				+ "ec.id_clasificador,"
+				+ "ec.monto_nacional,"
+				+ "ef.ciclo, "
+				+ "ef.fase "
+				+ "FROM expediente as e inner join expediente_secuencia as es ON e.ano_eje = es.ano_eje AND e.sec_ejec = es.sec_ejec AND e.expediente = es.expediente "
+				+ "inner join expediente_fase as ef ON es.ano_eje = ef.ano_eje AND es.sec_ejec = ef.sec_ejec AND es.expediente = ef.expediente AND es.secuencia = ef.secuencia "
+				+ "inner join expediente_meta as em ON es.ano_eje = em.ano_eje AND es.sec_ejec = em.sec_ejec AND es.expediente = em.expediente AND es.secuencia = em.secuencia AND es.correlativo = em.correlativo  "
+				+ "inner join expediente_clasif as ec ON em.ano_eje = ec.ano_eje AND em.sec_ejec = ec.sec_ejec AND em.expediente = ec.expediente AND em.secuencia = ec.secuencia AND em.correlativo = ec.correlativo AND em.id_clasificador = ec.id_clasificador "
+				+ "WHERE e.ano_eje = '"+ano_eje+"' "
+				+ "and e.sec_ejec = '"+sec_ejec+"' "
+				+ "and e.estado_envio = 'A' "
+				+ "and es.estado_envio = 'A' "
+				+ "and ef.estado_envio = 'A' "
+				+ "and em.estado_envio = 'A' "
+				+ "and ec.estado_envio = 'A' "
+				+ "and ef.ciclo = 'G' "				
+				+ "order by e.ano_eje, e.sec_ejec, es.expediente, es.secuencia, es.correlativo asc ";
+
+				
+		String sql2 = "SELECT "
+				+ "e.ano_eje, "
+				+ "e.sec_ejec,"
+				+ "e.expediente, "
+				+ "es.secuencia, "
+				+ "es.correlativo,"
+				+ "es.cod_doc,"
+				+ "es.num_doc,"
+				+ "es.fecha_doc,"
+				+ "MONTH(es.fecha_doc) as mes,"
+				+ "DAY(es.fecha_doc) as dia,"
+				+ "ef.fuente_financ,"
+				+ "ef.ruc,"
+				+ "em.sec_func,"
+				+ "ec.id_clasificador,"
+				+ "ec.monto_nacional,"
+				+ "ef.ciclo, "
+				+ "ef.fase "
+				+ "FROM expediente as e inner join expediente_secuencia as es ON e.ano_eje = es.ano_eje AND e.sec_ejec = es.sec_ejec AND e.expediente = es.expediente "
+				+ "inner join expediente_fase as ef ON es.ano_eje = ef.ano_eje AND es.sec_ejec = ef.sec_ejec AND es.expediente = ef.expediente AND es.secuencia = ef.secuencia "
+				+ "inner join expediente_meta as em ON es.ano_eje = em.ano_eje AND es.sec_ejec = em.sec_ejec AND es.expediente = em.expediente AND es.secuencia = em.secuencia AND es.correlativo = em.correlativo  "
+				+ "inner join expediente_clasif as ec ON em.ano_eje = ec.ano_eje AND em.sec_ejec = ec.sec_ejec AND em.expediente = ec.expediente AND em.secuencia = ec.secuencia AND em.correlativo = ec.correlativo AND em.id_clasificador = ec.id_clasificador "
+				+ "WHERE e.ano_eje = '"+ano_eje+"' "
+				+ "and e.sec_ejec = '"+sec_ejec+"' "
+				+ "and e.estado_envio = 'A' "
+				+ "and es.estado_envio = 'A' "
+				+ "and ef.estado_envio = 'A' "
+				+ "and em.estado_envio = 'A' "
+				+ "and ec.estado_envio = 'A' "
+				+ "and ef.ciclo = 'G' "
+				+ "and es.ano_eje+es.sec_ejec+es.expediente+es.secuencia+es.correlativo > '"+secuencial+"'"
+				+ "order by e.ano_eje, e.sec_ejec, es.expediente, es.secuencia, es.correlativo asc ";	
+		
+		if(secuencial == null) {
+			query = sql1;
+		}else {
+			query = sql2;
+		}
+				
+		Recordset rs = new Recordset();
+		rs.Open(new Variant(query), new Variant(connectionString));
+						
+		if (!rs.getEOF()) {
+			Fields fs = rs.getFields();
+			
+			rs.MoveFirst();
+			
+			while (!rs.getEOF()) {
+				MigracionRegistroSiaf mRegistroSiaf = new MigracionRegistroSiaf();
+			
+				String pattern = "dd/MM/yyyy";
+				SimpleDateFormat format = new SimpleDateFormat(pattern);
+								
+				mRegistroSiaf.setAno_eje(fs.getItem(0).getValue().getString().trim());
+				mRegistroSiaf.setSec_ejec(fs.getItem(1).getValue().getString().trim());
+				mRegistroSiaf.setExpediente(fs.getItem(2).getValue().getString().trim());
+				mRegistroSiaf.setSecuencia(fs.getItem(3).getValue().getString().trim());
+				mRegistroSiaf.setCorrelativo(fs.getItem(4).getValue().getString().trim());
+				mRegistroSiaf.setCod_doc(fs.getItem(5).getValue().getString().trim());
+				mRegistroSiaf.setNum_doc(fs.getItem(6).getValue().getString().trim());
+				if(fs.getItem(7).getValue().getJavaDate() != null) {
+					mRegistroSiaf.setFecha_doc(format.format(fs.getItem(7).getValue().getJavaDate()));
+				}else {
+					mRegistroSiaf.setFecha_doc(null);
+				}				
+				mRegistroSiaf.setMes(fs.getItem(8).getValue().changeType(sVariable).getInt());
+				mRegistroSiaf.setDia(fs.getItem(9).getValue().changeType(sVariable).getInt());
+				mRegistroSiaf.setFuente_financ(fs.getItem(10).getValue().getString().trim());
+				mRegistroSiaf.setRuc(fs.getItem(11).getValue().getString().trim());
+				mRegistroSiaf.setSec_func(fs.getItem(12).getValue().getString().trim());
+				mRegistroSiaf.setId_clasificador(fs.getItem(13).getValue().getString().trim());
+				mRegistroSiaf.setMonto_nacional(fs.getItem(14).getValue().getDecimal());
+				mRegistroSiaf.setCiclo(fs.getItem(15).getValue().getString().trim());
+				mRegistroSiaf.setFase(fs.getItem(16).getValue().getString().trim());
+				
+				iResp = this.insertaRegistroSiaf(mRegistroSiaf);
+				if(iResp != 1) {
+					return iResp;
+				}				
+				rs.MoveNext();
+			}	
+		}	
+		rs.Close();
+		return iResp;
+	}
+
+
+	@Override
+	public Integer cargarNotaModificatoria(String ano_eje, String sec_ejec, String secuencial) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer cargarRegistrosPresupuesto(String ano_eje, String sec_ejec, String secuencial) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
 	public Integer insertaCertificacion(MigracionCertificado certificado) {
 		Integer iResp = 1;		
 		String sql = "INSERT INTO certificado_compromiso_anual("
@@ -251,9 +415,43 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 			iResp = 0;
 		}
 		return iResp;
-	}
+	}	
 	
-	public Integer existeCertificados(String nombre_tabla, String ano_eje) {
+	public Integer insertaRegistroSiaf(MigracionRegistroSiaf registroSiaf) {
+		Integer iResp = 1;		
+		String sql = "INSERT INTO registro_siaf"
+				+ "           (ano_eje"
+				+ "           ,sec_ejec"
+				+ "           ,expediente"
+				+ "           ,secuencia"
+				+ "           ,correlativo"
+				+ "           ,cod_doc"
+				+ "           ,fecha_doc"
+				+ "           ,num_doc"
+				+ "           ,mes"
+				+ "           ,dia"
+				+ "           ,fuente_financ"
+				+ "           ,ruc"
+				+ "           ,id_clasificador"
+				+ "           ,sec_func"
+				+ "           ,monto_nacional"
+				+ "           ,fase"
+				+ "           ,ciclo)"
+				+ "     VALUES "
+				+ "           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			jdbctemplate.update(sql, new Object[] {registroSiaf.getAno_eje(),registroSiaf.getSec_ejec(),registroSiaf.getExpediente(), registroSiaf.getSecuencia(),
+					registroSiaf.getCorrelativo(),registroSiaf.getCod_doc(),registroSiaf.getFecha_doc(),registroSiaf.getNum_doc(), registroSiaf.getMes(), 
+					registroSiaf.getDia(),registroSiaf.getFuente_financ(), registroSiaf.getRuc(),registroSiaf.getId_clasificador(), registroSiaf.getSec_func(),
+					registroSiaf.getMonto_nacional(),registroSiaf.getFase(),registroSiaf.getCiclo()});
+			iResp = 1;
+		} catch (Exception e) {			
+			System.out.println(e.getMessage());
+			iResp = 0;
+		}
+		return iResp;
+	}
+	public Integer existeRegistros(String nombre_tabla, String ano_eje) {
 		Integer numeroRegistros = 0;
 		try {			
 			String query = "SELECT count(*) as cantidad FROM "+nombre_tabla+" where ano_eje = '"+ano_eje+"'";			
@@ -276,17 +474,17 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}
 		return secuencial;		
 	}
-
-	@Override
-	public Integer cargarRegistroSiaf(String ano_eje, String sec_ejec) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Integer cargarNotaModificatoria(String ano_eje, String sec_ejec) {
-		// TODO Auto-generated method stub
-		return null;
+	
+	public String ultimoRegistroSiaf(String ano_eje) {
+		String secuencial = "";
+		try {			
+			String query = " select top 1 (ano_eje+sec_ejec+expediente+secuencia+correlativo) as secuencial from registro_siaf where ano_eje = '"+ano_eje+"' order by id_registro_siaf desc";			
+			secuencial = getJdbcTemplate().queryForObject(query, String.class);									
+		} catch (Exception e) {
+			System.out.println(e.getMessage());			
+			secuencial= "9000";
+		}
+		return secuencial;		
 	}
 
 }

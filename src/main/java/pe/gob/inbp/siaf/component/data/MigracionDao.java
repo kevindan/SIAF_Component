@@ -6,7 +6,7 @@ public interface MigracionDao {
 	
 	GenericResponse migrarTablas(String ano_eje, String  sec_ejec);
 	Integer cargarCertificaciconCompromiso(String ano_eje, String  sec_ejec, String secuencial);
-	Integer cargarRegistroSiaf(String ano_eje, String  sec_ejec);
-	Integer cargarNotaModificatoria(String ano_eje, String  sec_ejec);
-
+	Integer cargarRegistroSiaf(String ano_eje, String  sec_ejec, String secuencial);
+	Integer cargarNotaModificatoria(String ano_eje, String  sec_ejec, String secuencial);
+	Integer cargarRegistrosPresupuesto(String ano_eje, String  sec_ejec, String secuencial);
 }
