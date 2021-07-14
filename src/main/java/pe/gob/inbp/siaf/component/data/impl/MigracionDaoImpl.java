@@ -15,6 +15,7 @@ import com.jacob.com.Variant;
 
 import pe.gob.inbp.siaf.component.data.MigracionDao;
 import pe.gob.inbp.siaf.component.domain.MigracionCertificado;
+import pe.gob.inbp.siaf.component.domain.MigracionNotaModificatoria;
 import pe.gob.inbp.siaf.component.domain.MigracionRegistroSiaf;
 import pe.gob.inbp.siaf.component.payload.GenericResponse;
 import pe.gob.inbp.siaf.component.utility.AdoUtility;
@@ -94,8 +95,34 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}else if(cantRegSiaf < 0) {
 			errores.add(new Error("Error al consultar existencia de registro SIAF"));
 		}
+		
 		//3. PROCESO DE CARGA DE LAS NOTAS DE MODIFICACION
+		Integer cantNotaModif = this.existeRegistros("nota_modificatoria", ano_eje);
+		System.out.println("Cantidad de registros de nota modificatoria entontrados: "+cantNotaModif);
+		if(cantNotaModif > 0) {
+			String secuencialNotaModif = this.ultimoRegistroNotaModificacion(ano_eje);
+			System.out.println("Secuencial Nota Modificatoria: "+secuencialNotaModif);
+			if(!secuencialNotaModif.equals("9000")) {
+				Integer iRespRegNotaModif = this.cargarNotaModificatoria(ano_eje, sec_ejec, secuencialNotaModif);
+				System.out.println("Estado registro de registro de nota modificatoria: "+iRespRegNotaModif);
+				if(iRespRegNotaModif == -1) {
+					errores.add(new Error("Error al insertar registro de nota modificatoria"));
+				}
+			}else {
+				errores.add(new Error("Error al consultar el último secuencial de nota modificatoria"));
+			}
+		}else if(cantNotaModif == 0) {
+			Integer iRespRegNotaModif = this.cargarNotaModificatoria(ano_eje, sec_ejec, null);
+			System.out.println("Estado registro de nota modificatoria: "+iRespRegNotaModif);
+			if(iRespRegNotaModif == -1) {
+				errores.add(new Error("Error al insertar registro de Nota modificatoria"));
+			}			
+		}else if(cantNotaModif < 0) {
+			errores.add(new Error("Error al consultar existencia de nota modificatoria"));
+		}
+		
 		//4. PROCESO DE CARGA DE LA TABLA PRESUPUESTO
+		//...
 		
 		if(errores.isEmpty()) {
 			response.setCode("0000");
@@ -371,8 +398,103 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 
 	@Override
 	public Integer cargarNotaModificatoria(String ano_eje, String sec_ejec, String secuencial) {
-		// TODO Auto-generated method stub
-		return null;
+		Integer iResp = 1;
+		String connectionString = AdoUtility.setConnectionString(folderSiafDataMirror);
+		Short sVariable = 3;
+		String query = "";
+		String sql1 = "SELECT "
+				+ "nc.ano_eje,"
+				+ "nc.sec_ejec,"
+				+ "nc.sec_nota,"
+				+ "nd.sec_func,"
+				+ "nd.fuente_financ,"
+				+ "nd.id_clasificador,"
+				+ "ns.notas,"
+				+ "ns.fecha,"
+				+ "MONTH(ns.fecha) as mes,"
+				+ "DAY(ns.fecha) as dia,"
+				+ "nd.monto_a as credito,"
+				+ "nd.monto_de as anulacion "
+				+ "from nota_modificatoria_cab as nc "
+				+ "INNER JOIN nota_modificatoria_sec as ns ON nc.ano_eje = ns.ano_eje AND nc.sec_ejec = ns.sec_ejec AND nc.sec_nota = ns.sec_nota "
+				+ "INNER JOIN nota_modificatoria_det as nd ON nc.ano_eje = nd.ano_eje AND nc.sec_ejec = nd.sec_ejec AND nc.sec_nota = nd.sec_nota "
+				+ "where ns.estado = 'A' "
+				+ "and ns.estado_envio = 'A' "
+				+ "AND nc.ano_eje = '"+ano_eje+"' "
+				+ "AND nc.sec_ejec = '"+sec_ejec+"' "
+				+ "ORDER BY nc.sec_nota asc ";
+
+
+				
+		String sql2 ="SELECT "
+				+ "nc.ano_eje,"
+				+ "nc.sec_ejec,"
+				+ "nc.sec_nota,"
+				+ "nd.sec_func,"
+				+ "nd.fuente_financ,"
+				+ "nd.id_clasificador,"
+				+ "ns.notas,"
+				+ "ns.fecha,"
+				+ "MONTH(ns.fecha) as mes,"
+				+ "DAY(ns.fecha) as dia,"
+				+ "nd.monto_a as credito,"
+				+ "nd.monto_de as anulacion "
+				+ "from nota_modificatoria_cab as nc "
+				+ "INNER JOIN nota_modificatoria_sec as ns ON nc.ano_eje = ns.ano_eje AND nc.sec_ejec = ns.sec_ejec AND nc.sec_nota = ns.sec_nota "
+				+ "INNER JOIN nota_modificatoria_det as nd ON nc.ano_eje = nd.ano_eje AND nc.sec_ejec = nd.sec_ejec AND nc.sec_nota = nd.sec_nota "
+				+ "where ns.estado = 'A' "
+				+ "AND ns.estado_envio = 'A' "
+				+ "AND nc.ano_eje = '"+ano_eje+"' "
+				+ "AND nc.sec_ejec = '"+sec_ejec+"' "
+				+ "AND nc.ano_eje+nc.sec_ejec+nc.sec_nota > '"+secuencial+"'"
+				+ "ORDER BY nc.sec_nota asc ";	
+		
+		if(secuencial == null) {
+			query = sql1;
+		}else {
+			query = sql2;
+		}
+				
+		Recordset rs = new Recordset();
+		rs.Open(new Variant(query), new Variant(connectionString));
+						
+		if (!rs.getEOF()) {
+			Fields fs = rs.getFields();
+			
+			rs.MoveFirst();
+			
+			while (!rs.getEOF()) {
+				MigracionNotaModificatoria mNotaModificatoria = new MigracionNotaModificatoria();
+			
+				String pattern = "dd/MM/yyyy";
+				SimpleDateFormat format = new SimpleDateFormat(pattern);
+								
+				mNotaModificatoria.setAno_eje(fs.getItem(0).getValue().getString().trim());
+				mNotaModificatoria.setSec_ejec(fs.getItem(1).getValue().getString().trim());
+				mNotaModificatoria.setSec_nota(fs.getItem(2).getValue().getString().trim());
+				mNotaModificatoria.setSec_func(fs.getItem(3).getValue().getString().trim());
+				mNotaModificatoria.setFuente_financ(fs.getItem(4).getValue().getString().trim());
+				mNotaModificatoria.setId_clasificador(fs.getItem(5).getValue().getString().trim());
+				mNotaModificatoria.setNotas(fs.getItem(6).getValue().getString().trim());
+				if(fs.getItem(7).getValue().getJavaDate() != null) {
+					mNotaModificatoria.setFecha(format.format(fs.getItem(7).getValue().getJavaDate()));
+				}else {
+					mNotaModificatoria.setFecha(null);
+				}				
+				mNotaModificatoria.setMes(fs.getItem(8).getValue().changeType(sVariable).getInt());
+				mNotaModificatoria.setDia(fs.getItem(9).getValue().changeType(sVariable).getInt());
+				mNotaModificatoria.setCredito(fs.getItem(10).getValue().getDecimal());
+				mNotaModificatoria.setAnulacion(fs.getItem(11).getValue().getDecimal());
+				
+				iResp = this.insertaNotaModificatoria(mNotaModificatoria);
+				if(iResp != 1) {
+					return iResp;
+				}				
+				rs.MoveNext();
+			}	
+		}	
+		rs.Close();
+		return iResp;
 	}
 
 	@Override
@@ -451,6 +573,37 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}
 		return iResp;
 	}
+	
+	public Integer insertaNotaModificatoria(MigracionNotaModificatoria notaModificatoria) {
+		Integer iResp = 1;		
+		String sql = "INSERT INTO nota_modificatoria"
+				+ "           (ano_eje"
+				+ "           ,sec_ejec"
+				+ "           ,sec_nota"
+				+ "           ,fecha"
+				+ "           ,notas"
+				+ "           ,mes"
+				+ "           ,dia"
+				+ "           ,fuente_financ"
+				+ "           ,id_clasificador"
+				+ "           ,sec_func"
+				+ "           ,anulacion"
+				+ "           ,credito)"
+				+ "     VALUES"
+				+ "           (?,?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			jdbctemplate.update(sql, new Object[] {notaModificatoria.getAno_eje(),notaModificatoria.getSec_ejec(),notaModificatoria.getSec_nota(),
+					notaModificatoria.getFecha(), notaModificatoria.getNotas(), notaModificatoria.getMes(), notaModificatoria.getDia(),
+					notaModificatoria.getFuente_financ(), notaModificatoria.getId_clasificador(), notaModificatoria.getSec_func(), notaModificatoria.getAnulacion(),
+					notaModificatoria.getCredito()});
+			iResp = 1;
+		} catch (Exception e) {			
+			System.out.println(e.getMessage());
+			iResp = 0;
+		}
+		return iResp;
+	}
+	
 	public Integer existeRegistros(String nombre_tabla, String ano_eje) {
 		Integer numeroRegistros = 0;
 		try {			
@@ -487,4 +640,16 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		return secuencial;		
 	}
 
+	public String ultimoRegistroNotaModificacion(String ano_eje) {
+		String secuencial = "";
+		try {			
+			String query = " select top 1 (ano_eje+sec_ejec+sec_nota) as secuencial from nota_modificatoria where ano_eje = '"+ano_eje+"' order by id_nota_modificatoria desc";			
+			secuencial = getJdbcTemplate().queryForObject(query, String.class);									
+		} catch (Exception e) {
+			System.out.println(e.getMessage());			
+			secuencial= "9000";
+		}
+		return secuencial;		
+	}
+	
 }
