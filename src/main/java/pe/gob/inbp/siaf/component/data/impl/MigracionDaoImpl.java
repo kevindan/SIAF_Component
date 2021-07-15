@@ -15,6 +15,8 @@ import com.jacob.com.Variant;
 
 import pe.gob.inbp.siaf.component.data.MigracionDao;
 import pe.gob.inbp.siaf.component.domain.MigracionCertificado;
+import pe.gob.inbp.siaf.component.domain.MigracionClasificador;
+import pe.gob.inbp.siaf.component.domain.MigracionMeta;
 import pe.gob.inbp.siaf.component.domain.MigracionNotaModificatoria;
 import pe.gob.inbp.siaf.component.domain.MigracionRegistroSiaf;
 import pe.gob.inbp.siaf.component.payload.GenericResponse;
@@ -604,6 +606,82 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		return iResp;
 	}
 	
+	public Integer insertaMeta(MigracionMeta migracionMeta) {
+		Integer iResp = 1;		
+		String sql = "INSERT INTO meta"
+				+ "           (act_ai_obr "
+				+ "           ,act_ai_obr_nombre"
+				+ "           ,ano_eje"
+				+ "           ,division_func"
+				+ "           ,division_func_nombre"
+				+ "           ,finalidad"
+				+ "           ,funcion"
+				+ "           ,funcion_nombre"
+				+ "           ,grupo_func"
+				+ "           ,grupo_func_nombre"
+				+ "           ,meta"
+				+ "           ,nombre_meta"
+				+ "           ,prod_proy"
+				+ "           ,prod_proy_nombre"
+				+ "           ,programa_ppto"
+				+ "           ,programa_ppto_nombre"
+				+ "           ,sec_ejec"
+				+ "           ,sec_func"
+				+ "           ,unidad_medida"
+				+ "           ,unidad_medida_nombre"
+				+ "           ,id_periodo)"
+				+ "     VALUES "
+				+ "           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			jdbctemplate.update(sql, new Object[] {migracionMeta.getAct_ai_obr(),migracionMeta.getAct_ai_obr_nombre(),migracionMeta.getAno_eje(),
+					migracionMeta.getDivision_func(), migracionMeta.getDivision_func_nombre(), migracionMeta.getFinalidad(), migracionMeta.getFuncion(),
+					migracionMeta.getFuncion_nombre(), migracionMeta.getGrupo_func(), migracionMeta.getGrupo_func_nombre(), migracionMeta.getMeta(),
+					migracionMeta.getNombre_meta(), migracionMeta.getProd_proy(), migracionMeta.getProd_proy_nombre(), migracionMeta.getPrograma_ppto(),
+					migracionMeta.getPrograma_ppto_nombre(), migracionMeta.getSec_ejec(), migracionMeta.getSec_func(), migracionMeta.getUnidad_medida(),
+					migracionMeta.getUnidad_medida_nombre(), migracionMeta.getId_periodo()});
+			iResp = 1;
+		} catch (Exception e) {			
+			System.out.println(e.getMessage());
+			iResp = 0;
+		}
+		return iResp;
+	}
+	
+	public Integer insertaClasificador(MigracionClasificador migracionClasificador) {
+		Integer iResp = 1;		
+		String sql = "INSERT INTO clasificador"
+				+ "           (ano_eje"
+				+ "           ,cod_clasificador"
+				+ "           ,especifica"
+				+ "           ,especifica_det"
+				+ "           ,especifica_nombre"
+				+ "           ,generica"
+				+ "           ,generica_nombre"
+				+ "           ,id_clasificador"
+				+ "           ,nombre_clasificador"
+				+ "           ,sec_ejec"
+				+ "           ,sub_generica"
+				+ "           ,subgenerica_det"
+				+ "           ,subgenerica_det_nombre"
+				+ "           ,subgenerica_nombre"
+				+ "           ,tipo_transaccion"
+				+ "           ,tipo_transaccion_nombre)"
+				+ "     VALUES "
+				+ "           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		try {
+			jdbctemplate.update(sql, new Object[] {migracionClasificador.getAno_eje(),migracionClasificador.getCod_clasificador(),migracionClasificador.getEspecifica(),
+					migracionClasificador.getEspecifica_det(), migracionClasificador.getEspecifica_nombre(), migracionClasificador.getGenerica(), migracionClasificador.getGenerica_nombre(),
+					migracionClasificador.getId_clasificador(), migracionClasificador.getNombre_clasificador(), migracionClasificador.getSec_ejec(), migracionClasificador.getSubgenerica(),
+					migracionClasificador.getSubgenerica_det(), migracionClasificador.getSubgenerica_det_nombre(), migracionClasificador.getSubgenerica_nombre(),
+					migracionClasificador.getTipo_transaccion(), migracionClasificador.getTipo_transaccion_nombre()});
+			iResp = 1;
+		} catch (Exception e) {			
+			System.out.println(e.getMessage());
+			iResp = 0;
+		}
+		return iResp;
+	}
+	
 	public Integer existeRegistros(String nombre_tabla, String ano_eje) {
 		Integer numeroRegistros = 0;
 		try {			
@@ -650,6 +728,21 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 			secuencial= "9000";
 		}
 		return secuencial;		
+	}
+	
+	public Integer getPeriodo(String ano_eje) {
+		Integer resp = 0;
+		try {
+			String query = "select id_periodo from periodo where descripcion = '"+ano_eje+"' and estado = 1";
+			resp = getJdbcTemplate().queryForObject(query, Integer.class);
+			if(resp == null) {
+				resp = 0;
+			}
+		} catch (Exception e) {
+			System.out.println("Error : "+e.getMessage());
+			resp = -1;
+		}		
+		return resp;
 	}
 	
 }
