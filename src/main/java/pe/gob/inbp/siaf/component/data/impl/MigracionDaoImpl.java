@@ -500,6 +500,263 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	}
 
 	@Override
+	public Integer cargarMeta(String ano_eje, String sec_ejec, String secuencial) {
+		Integer iResp = 1;
+		String connectionString = AdoUtility.setConnectionString(folderSiafDataMirror);
+		String query = "";
+		String sql1 =  "SELECT "
+				+ "A.ano_eje,"
+				+ "A.sec_ejec,"
+				+ "A.sec_func,"
+				+ "A.PROGRAMA_PPTO programa_ppto, "
+				+ "PPN.NOMBRE AS programa_ppto_nombre,"
+				+ "A.funcion,"
+				+ "LTRIM(RTRIM(B.NOMBRE)) funcion_nombre, " 
+				+ "A.programa as division_func,"
+				+ "LTRIM(RTRIM(P.NOMBRE)) division_func_nombre, "
+				+ "A.sub_programa as grupo_func, "
+				+ "LTRIM(RTRIM(S.NOMBRE)) grupo_func_nombre, "
+				+ "A.componente as act_ai_obr, "
+				+ "C.nombre as act_ai_obr_nombre,"
+				+ "A.act_proy as prod_proy, "
+				+ "ap.nombre as prod_proy_nombre,"
+				+ "A.meta,"
+				+ "LTRIM(RTRIM(F.NOMBRE)) nombre_meta,"
+				+ "A.finalidad, "
+				+ "A.unidad_medida, "
+				+ "LTRIM(RTRIM(U.NOMBRE)) unidad_medida_nombre "
+				+ "FROM META A "
+				+ "INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION "
+				+ "INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA "
+				+ "INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA "
+				+ "INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
+				+ "INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA "
+				+ "INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE "
+				+ "INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY "
+				+ "INNER JOIN PROGRAMA_PPTO_NOMBRE AS PPN ON A.ANO_EJE = PPN.ANO_EJE AND A.PROGRAMA_PPTO = PPN.PROGRAMA_PPTO "
+				+ "WHERE A.ANO_EJE='"+ano_eje+"' "
+				+ "AND A.SEC_EJEC='"+sec_ejec+"' "
+				+ "ORDER BY A.ano_eje,A.sec_ejec,A.sec_func asc";
+
+				
+		String sql2 = "SELECT "
+				+ "A.ano_eje,"
+				+ "A.sec_ejec,"
+				+ "A.sec_func,"
+				+ "A.PROGRAMA_PPTO programa_ppto, "
+				+ "PPN.NOMBRE AS programa_ppto_nombre,"
+				+ "A.funcion,"
+				+ "LTRIM(RTRIM(B.NOMBRE)) funcion_nombre, " 
+				+ "A.programa as division_func,"
+				+ "LTRIM(RTRIM(P.NOMBRE)) division_func_nombre, "
+				+ "A.sub_programa as grupo_func, "
+				+ "LTRIM(RTRIM(S.NOMBRE)) grupo_func_nombre, "
+				+ "A.componente as act_ai_obr, "
+				+ "C.nombre as act_ai_obr_nombre,"
+				+ "A.act_proy as prod_proy, "
+				+ "ap.nombre as prod_proy_nombre,"
+				+ "A.meta,"
+				+ "LTRIM(RTRIM(F.NOMBRE)) nombre_meta,"
+				+ "A.finalidad, "
+				+ "A.unidad_medida, "
+				+ "LTRIM(RTRIM(U.NOMBRE)) unidad_medida_nombre "
+				+ "FROM META A "
+				+ "INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION "
+				+ "INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA "
+				+ "INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA "
+				+ "INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
+				+ "INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA "
+				+ "INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE "
+				+ "INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY "
+				+ "INNER JOIN PROGRAMA_PPTO_NOMBRE AS PPN ON A.ANO_EJE = PPN.ANO_EJE AND A.PROGRAMA_PPTO = PPN.PROGRAMA_PPTO "
+				+ "WHERE A.ANO_EJE='"+ano_eje+"' "
+				+ "AND A.SEC_EJEC='"+sec_ejec+"' "
+				+ "AND A.ano_eje+A.sec_ejec+A.sec_func > '"+secuencial+"' "
+				+ "ORDER BY A.ano_eje,A.sec_ejec,A.sec_func asc";
+		
+		if(secuencial == null) {
+			query = sql1;
+		}else {
+			query = sql2;
+		}
+				
+		Recordset rs = new Recordset();
+		rs.Open(new Variant(query), new Variant(connectionString));
+						
+		if (!rs.getEOF()) {
+			Fields fs = rs.getFields();
+			
+			rs.MoveFirst();
+			
+			while (!rs.getEOF()) {
+				MigracionMeta mMeta = new MigracionMeta();
+			
+				mMeta.setAno_eje(fs.getItem(0).getValue().getString().trim());
+				mMeta.setSec_ejec(fs.getItem(1).getValue().getString().trim());
+				mMeta.setSec_func(fs.getItem(2).getValue().getString().trim());
+				mMeta.setPrograma_ppto(fs.getItem(3).getValue().getString().trim());
+				mMeta.setPrograma_ppto_nombre(fs.getItem(4).getValue().getString().trim());
+				mMeta.setFuncion(fs.getItem(5).getValue().getString().trim());
+				mMeta.setFuncion_nombre(fs.getItem(6).getValue().getString().trim());				
+				mMeta.setDivision_func(fs.getItem(7).getValue().getString().trim());
+				mMeta.setDivision_func_nombre(fs.getItem(8).getValue().getString().trim());				
+				mMeta.setGrupo_func(fs.getItem(9).getValue().getString().trim());
+				mMeta.setGrupo_func_nombre(fs.getItem(10).getValue().getString().trim());				
+				mMeta.setAct_ai_obr(fs.getItem(11).getValue().getString().trim());
+				mMeta.setAct_ai_obr_nombre(fs.getItem(12).getValue().getString().trim());				
+				mMeta.setProd_proy(fs.getItem(13).getValue().getString().trim());
+				mMeta.setProd_proy_nombre(fs.getItem(14).getValue().getString().trim());
+				mMeta.setMeta(fs.getItem(15).getValue().getString().trim());
+				mMeta.setNombre_meta(fs.getItem(16).getValue().getString().trim());		
+				mMeta.setFinalidad(fs.getItem(17).getValue().getString().trim());
+				mMeta.setUnidad_medida(fs.getItem(18).getValue().getString().trim());				
+				mMeta.setUnidad_medida_nombre(fs.getItem(19).getValue().getString().trim());
+				
+				Integer iRespPeriodo = this.getIdPeriodo(ano_eje);
+				
+				if(iRespPeriodo > 0) {
+					mMeta.setId_periodo(iRespPeriodo);
+					iResp = this.insertaMeta(mMeta);
+					if(iResp != 1) {
+						return iResp;
+					}					
+				}else{
+					iResp = 0;
+					return iResp;
+				}			
+								
+				rs.MoveNext();
+			}	
+		}	
+		rs.Close();
+		return iResp;
+	}
+
+	@Override
+	public Integer cargarClasificador(String ano_eje, String secuencial) {
+		Integer iResp = 1;
+		String connectionString = AdoUtility.setConnectionString(folderSiafDataMirror);
+		String query = "";
+		String sql1 = "SELECT "				
+							+ "ed.tipo_transaccion,"
+							+ "LTRIM(RTRIM(tt.descripcion)) tipo_transaccion_nombre,"
+							+ "ed.generica,"
+							+ "ge.descripcion generica_nombre,"
+							+ "ed.subgenerica,"
+							+ "sg.descripcion subgenerica_nombre,"
+							+ "ed.subgenerica_det,"
+							+ "sgd.descripcion subgenerica_det_nombre,"
+							+ "ed.especifica,"
+							+ "e.descripcion especifica_nombre,"
+							+ "ed.especifica_det,"
+							+ "ed.tipo_transaccion+'.'+ed.generica+'.'+ed.subgenerica+ ed.subgenerica_det+'.'+ed.especifica+ed.especifica_det as cod_clasificador , "
+							+ "ed.id_clasificador,"
+							+ "ed.descripcion as nombre_clasificador "	
+							+ "from especifica_det as ed "
+							+ "INNER JOIN tipo_transaccion as tt ON ed.ano_eje = tt.ano_eje AND ed.tipo_transaccion = tt.tipo_transaccion "
+							+ "INNER JOIN generica ge ON ed.ano_eje = ge.ano_eje AND ed.tipo_transaccion = ge.tipo_transaccion AND ed.generica = ge.generica "
+							+ "INNER JOIN subgenerica sg ON ed.ano_eje = sg.ano_eje AND ed.tipo_transaccion = sg.tipo_transaccion AND ed.generica = sg.generica AND ed.subgenerica = sg.subgenerica  "
+							+ "INNER JOIN subgenerica_det sgd ON ed.ano_eje = sgd.ano_eje AND ed.tipo_transaccion = sgd.tipo_transaccion AND ed.generica = sgd.generica AND ed.subgenerica = sgd.subgenerica AND ed.subgenerica_det = sgd.subgenerica_det "
+							+ "INNER JOIN especifica e ON ed.ano_eje = e.ano_eje AND ed.tipo_transaccion = e.tipo_transaccion AND ed.generica = e.generica AND ed.subgenerica = e.subgenerica and ed.subgenerica_det = e.subgenerica_det AND ed.especifica = e.especifica "
+							+ "WHERE ed.ano_eje = '"+ano_eje+"' "				
+							+ "ORDER BY ed.tipo_transaccion, ed.generica, ed.subgenerica, ed.subgenerica_det, ed.especifica, ed.especifica_det asc";
+
+				
+		String sql2 = "SELECT "
+				+ "A.ano_eje,"
+				+ "A.sec_ejec,"
+				+ "A.sec_func,"
+				+ "A.PROGRAMA_PPTO programa_ppto, "
+				+ "PPN.NOMBRE AS programa_ppto_nombre,"
+				+ "A.funcion,"
+				+ "LTRIM(RTRIM(B.NOMBRE)) funcion_nombre, " 
+				+ "A.programa as division_func,"
+				+ "LTRIM(RTRIM(P.NOMBRE)) division_func_nombre, "
+				+ "A.sub_programa as grupo_func, "
+				+ "LTRIM(RTRIM(S.NOMBRE)) grupo_func_nombre, "
+				+ "A.componente as act_ai_obr, "
+				+ "C.nombre as act_ai_obr_nombre,"
+				+ "A.act_proy as prod_proy, "
+				+ "ap.nombre as prod_proy_nombre,"
+				+ "A.meta,"
+				+ "LTRIM(RTRIM(F.NOMBRE)) nombre_meta,"
+				+ "A.finalidad, "
+				+ "A.unidad_medida, "
+				+ "LTRIM(RTRIM(U.NOMBRE)) unidad_medida_nombre "
+				+ "FROM META A "
+				+ "INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION "
+				+ "INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA "
+				+ "INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA "
+				+ "INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
+				+ "INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA "
+				+ "INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE "
+				+ "INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY "
+				+ "INNER JOIN PROGRAMA_PPTO_NOMBRE AS PPN ON A.ANO_EJE = PPN.ANO_EJE AND A.PROGRAMA_PPTO = PPN.PROGRAMA_PPTO "
+				+ "WHERE A.ANO_EJE='"+ano_eje+"' "
+				+ "AND A.SEC_EJEC='"+sec_ejec+"' "
+				+ "AND A.ano_eje+A.sec_ejec+A.sec_func > '"+secuencial+"' "
+				+ "ORDER BY A.ano_eje,A.sec_ejec,A.sec_func asc";
+		
+		if(secuencial == null) {
+			query = sql1;
+		}else {
+			query = sql2;
+		}
+				
+		Recordset rs = new Recordset();
+		rs.Open(new Variant(query), new Variant(connectionString));
+						
+		if (!rs.getEOF()) {
+			Fields fs = rs.getFields();
+			
+			rs.MoveFirst();
+			
+			while (!rs.getEOF()) {
+				MigracionMeta mMeta = new MigracionMeta();
+			
+				mMeta.setAno_eje(fs.getItem(0).getValue().getString().trim());
+				mMeta.setSec_ejec(fs.getItem(1).getValue().getString().trim());
+				mMeta.setSec_func(fs.getItem(2).getValue().getString().trim());
+				mMeta.setPrograma_ppto(fs.getItem(3).getValue().getString().trim());
+				mMeta.setPrograma_ppto_nombre(fs.getItem(4).getValue().getString().trim());
+				mMeta.setFuncion(fs.getItem(5).getValue().getString().trim());
+				mMeta.setFuncion_nombre(fs.getItem(6).getValue().getString().trim());				
+				mMeta.setDivision_func(fs.getItem(7).getValue().getString().trim());
+				mMeta.setDivision_func_nombre(fs.getItem(8).getValue().getString().trim());				
+				mMeta.setGrupo_func(fs.getItem(9).getValue().getString().trim());
+				mMeta.setGrupo_func_nombre(fs.getItem(10).getValue().getString().trim());				
+				mMeta.setAct_ai_obr(fs.getItem(11).getValue().getString().trim());
+				mMeta.setAct_ai_obr_nombre(fs.getItem(12).getValue().getString().trim());				
+				mMeta.setProd_proy(fs.getItem(13).getValue().getString().trim());
+				mMeta.setProd_proy_nombre(fs.getItem(14).getValue().getString().trim());
+				mMeta.setMeta(fs.getItem(15).getValue().getString().trim());
+				mMeta.setNombre_meta(fs.getItem(16).getValue().getString().trim());		
+				mMeta.setFinalidad(fs.getItem(17).getValue().getString().trim());
+				mMeta.setUnidad_medida(fs.getItem(18).getValue().getString().trim());				
+				mMeta.setUnidad_medida_nombre(fs.getItem(19).getValue().getString().trim());
+				
+				Integer iRespPeriodo = this.getIdPeriodo(ano_eje);
+				
+				if(iRespPeriodo > 0) {
+					mMeta.setId_periodo(iRespPeriodo);
+					iResp = this.insertaMeta(mMeta);
+					if(iResp != 1) {
+						return iResp;
+					}					
+				}else{
+					iResp = 0;
+					return iResp;
+				}			
+								
+				rs.MoveNext();
+			}	
+		}	
+		rs.Close();
+		return iResp;
+	}
+	
+	
+	@Override
 	public Integer cargarRegistrosPresupuesto(String ano_eje, String sec_ejec, String secuencial) {
 		// TODO Auto-generated method stub
 		return null;
@@ -730,7 +987,31 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		return secuencial;		
 	}
 	
-	public Integer getPeriodo(String ano_eje) {
+	public String ultimoRegistroMeta(String ano_eje) {
+		String secuencial = "";
+		try {			
+			String query = " select top 1 (ano_eje+sec_ejec+sec_func) as secuencial from meta where ano_eje = '"+ano_eje+"' order by id_meta desc";			
+			secuencial = getJdbcTemplate().queryForObject(query, String.class);									
+		} catch (Exception e) {
+			System.out.println(e.getMessage());			
+			secuencial= "9000";
+		}
+		return secuencial;		
+	}
+	
+	public String ultimoRegistroClasificador(String ano_eje) {
+		String secuencial = "";
+		try {			
+			String query = "select top 1 (ano_eje+LTRIM(RTRIM(tipo_transaccion))+LTRIM(RTRIM(generica))+LTRIM(RTRIM(sub_generica))+LTRIM(RTRIM(subgenerica_det))+LTRIM(RTRIM(especifica))+LTRIM(RTRIM(especifica_det))) as secuencial from clasificador where ano_eje = '"+ano_eje+"' order by id_clasificador_gasto desc";
+			secuencial = getJdbcTemplate().queryForObject(query, String.class);									
+		} catch (Exception e) {
+			System.out.println(e.getMessage());			
+			secuencial= "9000";
+		}
+		return secuencial;		
+	}
+	
+	public Integer getIdPeriodo(String ano_eje) {
 		Integer resp = 0;
 		try {
 			String query = "select id_periodo from periodo where descripcion = '"+ano_eje+"' and estado = 1";
@@ -744,5 +1025,37 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}		
 		return resp;
 	}
+	
+	
+	public Integer getIdClasificadorGasto(String ano_eje, String sec_ejec, String id_clasificador) {
+		Integer resp = 0;
+		try {
+			String query = "select id_clasificador_gasto from clasificador where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and id_clasificador = '"+id_clasificador+"'";
+			resp = getJdbcTemplate().queryForObject(query, Integer.class);
+			if(resp == null) {
+				resp = 0;
+			}
+		} catch (Exception e) {
+			System.out.println("Error : "+e.getMessage());
+			resp = -1;
+		}		
+		return resp;	
+	}
+	
+	public Integer getIdMeta(String ano_eje, String sec_ejec, String sec_func) {
+		Integer resp = 0;
+		try {
+			String query = "select id_meta from meta where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and sec_ejec = '"+sec_func+"'";
+			resp = getJdbcTemplate().queryForObject(query, Integer.class);
+			if(resp == null) {
+				resp = 0;
+			}
+		} catch (Exception e) {
+			System.out.println("Error : "+e.getMessage());
+			resp = -1;
+		}		
+		return resp;	
+	}
+
 	
 }
