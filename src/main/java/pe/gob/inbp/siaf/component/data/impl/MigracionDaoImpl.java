@@ -44,7 +44,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	}
 
 	@Override
-	public GenericResponse migrarTablas(String ano_eje, String sec_ejec) {
+	public GenericResponse migrarCompromisoRegistroSiafModifacion(String ano_eje, String sec_ejec) {
 		GenericResponse response = new GenericResponse();
 		List<Error> errores = new ArrayList<Error>();
 		
@@ -124,7 +124,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}
 		
 		//4. PROCESO DE CARGA DE LA TABLA PRESUPUESTO
-		//...
+		//...Pendiente
 		
 		if(errores.isEmpty()) {
 			response.setCode("0000");
@@ -133,6 +133,75 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}else {
 			response.setCode("0001");
 			response.setMessage("Se han cargado correctamente casi todas las tablas, revisar la lista de errores");
+			response.setData(errores);			
+		}		
+		
+		return response;
+	}
+	
+	@Override
+	public GenericResponse migrarMetaClasificador(String ano_eje, String sec_ejec) {
+		GenericResponse response = new GenericResponse();
+		List<Error> errores = new ArrayList<Error>();
+		
+		//1. PROCESO DE CARGA DE LAS METAS
+		Integer cantMetas = this.existeRegistros("meta",ano_eje);
+		System.out.println("Cantidad de metas entontradas: "+cantMetas);
+		if(cantMetas > 0) {
+			String secuencialMetas = this.ultimoRegistroMeta(ano_eje);
+			System.out.println("Secuencial: "+secuencialMetas);
+			if(!secuencialMetas.equals("9000")) {
+				Integer iRespMetas = this.cargarMeta(ano_eje, sec_ejec, secuencialMetas);
+				System.out.println("Estado registro de las metas: "+iRespMetas);
+				if(iRespMetas == -1) {
+					errores.add(new Error("Error al insertar las metas"));
+				}
+			}else {
+				errores.add(new Error("Error al consultar el último secuencial de metas"));
+			}
+		}else if(cantMetas == 0) {
+			Integer iRespMetas = this.cargarMeta(ano_eje, sec_ejec, null);
+			System.out.println("Estado registro de metas: "+iRespMetas);
+			if(iRespMetas == -1) {
+				errores.add(new Error("Error al insertar las metas"));
+			}			
+		}else if(cantMetas < 0) {
+			errores.add(new Error("Error al consultar existencia de metas"));
+		}
+		
+		//2. PROCESO DE CARGA DE LOS CLASIFICADORES
+		Integer cantRegSiaf = this.existeRegistros("registro_siaf", ano_eje);
+		System.out.println("Cantidad de registros SIAF entontrados: "+cantRegSiaf);
+		if(cantRegSiaf > 0) {
+			String secuencialSiaf = this.ultimoRegistroSiaf(ano_eje);
+			System.out.println("Secuencial SIAF: "+secuencialSiaf);
+			if(!secuencialSiaf.equals("9000")) {
+				Integer iRespRegSiaf = this.cargarRegistroSiaf(ano_eje, sec_ejec, secuencialSiaf);
+				System.out.println("Estado registro de registro SIAF: "+iRespRegSiaf);
+				if(iRespRegSiaf == -1) {
+					errores.add(new Error("Error al insertar registro de registro SIAF"));
+				}
+			}else {
+				errores.add(new Error("Error al consultar el último secuencial de registros SIAF"));
+			}
+		}else if(cantRegSiaf == 0) {
+			Integer iRespRegSiaf = this.cargarRegistroSiaf(ano_eje, sec_ejec, null);
+			System.out.println("Estado registro de registro SIAF: "+iRespRegSiaf);
+			if(iRespRegSiaf == -1) {
+				errores.add(new Error("Error al insertar registro de registro SIAF"));
+			}			
+		}else if(cantRegSiaf < 0) {
+			errores.add(new Error("Error al consultar existencia de registro SIAF"));
+		}
+		
+		// PREPARACIÓN DE LA RESPUESTA DEL METODO
+		if(errores.isEmpty()) {
+			response.setCode("0000");
+			response.setMessage("Se han cargado correctamente las metas y clasificadores");
+			response.setData(null);
+		}else {
+			response.setCode("0001");
+			response.setMessage("Se han cargado correctamente casi todas los registros de metas y clasiicadores, revisar la lista de errores");
 			response.setData(errores);			
 		}		
 		

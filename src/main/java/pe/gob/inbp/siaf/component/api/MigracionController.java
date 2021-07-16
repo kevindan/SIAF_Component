@@ -20,7 +20,7 @@ public class MigracionController {
 	@GetMapping("/migarTablas/{ano_eje}/{sec_ejec}")
 	public GenericResponse migrarRegistros(@PathVariable ("ano_eje") String ano_eje, @PathVariable ("sec_ejec") String sec_ejec) {		
 		
-		return migracionService.migrarTablas(ano_eje, sec_ejec);
+		return migracionService.migrarCompromisoRegistroSiafModifacion(ano_eje, sec_ejec);
 	}	
 
 

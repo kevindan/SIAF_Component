@@ -14,8 +14,8 @@ public class MigracionServiceImpl implements MigracionService {
 	private MigracionDao migracionDao;
 	
 	@Override
-	public GenericResponse migrarTablas(String ano_eje, String sec_ejec) {		
-		return migracionDao.migrarTablas(ano_eje, sec_ejec);
+	public GenericResponse migrarCompromisoRegistroSiafModifacion(String ano_eje, String sec_ejec) {		
+		return migracionDao.migrarCompromisoRegistroSiafModifacion(ano_eje, sec_ejec);
 	}
 
 }
