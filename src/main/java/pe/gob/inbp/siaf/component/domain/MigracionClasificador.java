@@ -7,7 +7,6 @@ public class MigracionClasificador implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private Long id_clasificador_gasto;
 	private String ano_eje;
-	private String sec_ejec;
 	private String id_clasificador;
 	private String cod_clasificador;
 	private String tipo_transaccion;
@@ -27,7 +26,7 @@ public class MigracionClasificador implements Serializable {
 
 	}
 
-	public MigracionClasificador(Long id_clasificador_gasto, String ano_eje, String sec_ejec, String id_clasificador,
+	public MigracionClasificador(Long id_clasificador_gasto, String ano_eje, String id_clasificador,
 			String cod_clasificador, String tipo_transaccion, String tipo_transaccion_nombre, String generica,
 			String generica_nombre, String subgenerica, String subgenerica_nombre, String subgenerica_det,
 			String subgenerica_det_nombre, String especifica, String especifica_nombre, String especifica_det,
@@ -35,7 +34,6 @@ public class MigracionClasificador implements Serializable {
 
 		this.id_clasificador_gasto = id_clasificador_gasto;
 		this.ano_eje = ano_eje;
-		this.sec_ejec = sec_ejec;
 		this.id_clasificador = id_clasificador;
 		this.cod_clasificador = cod_clasificador;
 		this.tipo_transaccion = tipo_transaccion;
@@ -66,14 +64,6 @@ public class MigracionClasificador implements Serializable {
 
 	public void setAno_eje(String ano_eje) {
 		this.ano_eje = ano_eje;
-	}
-
-	public String getSec_ejec() {
-		return sec_ejec;
-	}
-
-	public void setSec_ejec(String sec_ejec) {
-		this.sec_ejec = sec_ejec;
 	}
 
 	public String getId_clasificador() {
@@ -191,11 +181,11 @@ public class MigracionClasificador implements Serializable {
 	@Override
 	public String toString() {
 		return "MigracionClasificador [id_clasificador_gasto=" + id_clasificador_gasto + ", ano_eje=" + ano_eje
-				+ ", sec_ejec=" + sec_ejec + ", id_clasificador=" + id_clasificador + ", cod_clasificador="
-				+ cod_clasificador + ", tipo_transaccion=" + tipo_transaccion + ", tipo_transaccion_nombre="
-				+ tipo_transaccion_nombre + ", generica=" + generica + ", generica_nombre=" + generica_nombre
-				+ ", subgenerica=" + subgenerica + ", subgenerica_nombre=" + subgenerica_nombre + ", subgenerica_det="
-				+ subgenerica_det + ", subgenerica_det_nombre=" + subgenerica_det_nombre + ", especifica=" + especifica
+				+ ", id_clasificador=" + id_clasificador + ", cod_clasificador=" + cod_clasificador
+				+ ", tipo_transaccion=" + tipo_transaccion + ", tipo_transaccion_nombre=" + tipo_transaccion_nombre
+				+ ", generica=" + generica + ", generica_nombre=" + generica_nombre + ", subgenerica=" + subgenerica
+				+ ", subgenerica_nombre=" + subgenerica_nombre + ", subgenerica_det=" + subgenerica_det
+				+ ", subgenerica_det_nombre=" + subgenerica_det_nombre + ", especifica=" + especifica
 				+ ", especifica_nombre=" + especifica_nombre + ", especifica_det=" + especifica_det
 				+ ", nombre_clasificador=" + nombre_clasificador + "]";
 	}
