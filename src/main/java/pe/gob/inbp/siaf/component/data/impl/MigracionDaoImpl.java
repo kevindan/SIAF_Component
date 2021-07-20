@@ -8,6 +8,7 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import org.springframework.stereotype.Repository;
 
@@ -18,8 +19,11 @@ import pe.gob.inbp.siaf.component.domain.MigracionCertificado;
 import pe.gob.inbp.siaf.component.domain.MigracionClasificador;
 import pe.gob.inbp.siaf.component.domain.MigracionMeta;
 import pe.gob.inbp.siaf.component.domain.MigracionNotaModificatoria;
+import pe.gob.inbp.siaf.component.domain.MigracionPresupuesto;
 import pe.gob.inbp.siaf.component.domain.MigracionRegistroSiaf;
+import pe.gob.inbp.siaf.component.domain.Presupuesto;
 import pe.gob.inbp.siaf.component.payload.GenericResponse;
+import pe.gob.inbp.siaf.component.rowmapper.MigracionPresupuestoRowMapper;
 import pe.gob.inbp.siaf.component.utility.AdoUtility;
 import pe.gob.inbp.siaf.component.vfp.Fields;
 import pe.gob.inbp.siaf.component.vfp.Recordset;
@@ -1103,6 +1107,19 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 			resp = -1;
 		}		
 		return resp;	
+	}
+	
+	public List<MigracionPresupuesto> listarPresupuesto(String ano_eje, String sec_ejec){
+		List<MigracionPresupuesto> lstPresupuesto = new ArrayList<MigracionPresupuesto>();
+		String query = "select id_presupuesto,id_clasificador_gasto, id_meta, ano_eje, sec_ejec, sec_func, id_clasificador, fuente_financ, monto_inicial from presupuesto where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"'";
+		
+		try {
+			RowMapper<MigracionPresupuesto> rowPresupuesto = new MigracionPresupuestoRowMapper();
+			lstPresupuesto = jdbctemplate.query(query, rowPresupuesto);			
+		} catch (Exception e) {
+			System.out.println("Error : "+e.getMessage());			
+		}
+		return lstPresupuesto;
 	}
 
 	

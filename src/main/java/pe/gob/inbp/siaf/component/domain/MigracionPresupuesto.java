@@ -11,7 +11,10 @@ public class MigracionPresupuesto implements Serializable {
 	private Long id_meta;
 	private Long id_clasificador_gasto;
 	private String ano_eje;
+	private String sec_ejec;
+	private String sec_func;
 	private String fuente_financ;
+	private String id_clasificador;
 	private BigDecimal monto_inicial;
 
 	public MigracionPresupuesto() {
@@ -19,13 +22,16 @@ public class MigracionPresupuesto implements Serializable {
 	}
 
 	public MigracionPresupuesto(Long id_presupuesto, Long id_meta, Long id_clasificador_gasto, String ano_eje,
-			String fuente_financ, BigDecimal monto_inicial) {
+			String sec_ejec, String sec_func, String fuente_financ, String id_clasificador, BigDecimal monto_inicial) {
 
 		this.id_presupuesto = id_presupuesto;
 		this.id_meta = id_meta;
 		this.id_clasificador_gasto = id_clasificador_gasto;
 		this.ano_eje = ano_eje;
+		this.sec_ejec = sec_ejec;
+		this.sec_func = sec_func;
 		this.fuente_financ = fuente_financ;
+		this.id_clasificador = id_clasificador;
 		this.monto_inicial = monto_inicial;
 	}
 
@@ -75,6 +81,30 @@ public class MigracionPresupuesto implements Serializable {
 
 	public void setMonto_inicial(BigDecimal monto_inicial) {
 		this.monto_inicial = monto_inicial;
+	}
+
+	public String getSec_ejec() {
+		return sec_ejec;
+	}
+
+	public void setSec_ejec(String sec_ejec) {
+		this.sec_ejec = sec_ejec;
+	}
+
+	public String getSec_func() {
+		return sec_func;
+	}
+
+	public void setSec_func(String sec_func) {
+		this.sec_func = sec_func;
+	}
+
+	public String getId_clasificador() {
+		return id_clasificador;
+	}
+
+	public void setId_clasificador(String id_clasificador) {
+		this.id_clasificador = id_clasificador;
 	}
 
 	@Override
