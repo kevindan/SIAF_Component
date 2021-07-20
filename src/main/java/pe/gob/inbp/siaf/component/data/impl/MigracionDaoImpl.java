@@ -809,9 +809,57 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	
 	
 	@Override
-	public Integer cargarRegistrosPresupuesto(String ano_eje, String sec_ejec, String secuencial) {
-		// TODO Auto-generated method stub
-		return null;
+	public Integer cargarRegistrosPresupuesto(String ano_eje, String sec_ejec) {
+		Integer iResp = 1;
+		String connectionString = AdoUtility.setConnectionString(folderSiafDataMirror);
+		String query = "SELECT "
+				+ "ano_eje, "
+				+ "sec_ejec, "
+				+ "sec_func, "
+				+ "fuente_financ, "
+				+ "id_clasificador, "
+				+ "presupuesto "
+				+ "FROM gasto "
+				+ "WHERE ano_eje = '"+ano_eje+"' "
+				+ "AND sec_ejec = '"+sec_ejec+"'";
+	
+		Recordset rs = new Recordset();
+		rs.Open(new Variant(query), new Variant(connectionString));
+						
+		if (!rs.getEOF()) {
+			Fields fs = rs.getFields();
+			
+			rs.MoveFirst();
+			
+			while (!rs.getEOF()) {
+				MigracionClasificador mClasificador = new MigracionClasificador();
+			
+				mClasificador.setAno_eje(fs.getItem(0).getValue().getString().trim());
+				mClasificador.setTipo_transaccion(fs.getItem(1).getValue().getString().trim());
+				mClasificador.setTipo_transaccion_nombre(fs.getItem(2).getValue().getString().trim());
+				mClasificador.setGenerica(fs.getItem(3).getValue().getString().trim());
+				mClasificador.setGenerica_nombre(fs.getItem(4).getValue().getString().trim());
+				mClasificador.setSubgenerica(fs.getItem(5).getValue().getString().trim());
+				mClasificador.setSubgenerica_nombre(fs.getItem(6).getValue().getString().trim());
+				mClasificador.setSubgenerica_det(fs.getItem(7).getValue().getString().trim());
+				mClasificador.setSubgenerica_det_nombre(fs.getItem(8).getValue().getString().trim());
+				mClasificador.setEspecifica(fs.getItem(9).getValue().getString().trim());
+				mClasificador.setEspecifica_nombre(fs.getItem(10).getValue().getString().trim());
+				mClasificador.setEspecifica_det(fs.getItem(11).getValue().getString().trim());
+				mClasificador.setCod_clasificador(fs.getItem(12).getValue().getString().trim());
+				mClasificador.setId_clasificador(fs.getItem(13).getValue().getString().trim());
+				mClasificador.setNombre_clasificador(fs.getItem(14).getValue().getString().trim());
+				
+				iResp = this.insertaClasificador(mClasificador);
+				if(iResp != 1) {
+					return iResp;
+				}					
+													
+				rs.MoveNext();
+			}	
+		}	
+		rs.Close();
+		return iResp;
 	}
 	
 	public Integer insertaCertificacion(MigracionCertificado certificado) {
@@ -982,6 +1030,31 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 					migracionClasificador.getId_clasificador(), migracionClasificador.getNombre_clasificador(), migracionClasificador.getSubgenerica(),
 					migracionClasificador.getSubgenerica_det(), migracionClasificador.getSubgenerica_det_nombre(), migracionClasificador.getSubgenerica_nombre(),
 					migracionClasificador.getTipo_transaccion(), migracionClasificador.getTipo_transaccion_nombre()});
+			iResp = 1;
+		} catch (Exception e) {			
+			System.out.println(e.getMessage());
+			iResp = 0;
+		}
+		return iResp;
+	}
+	
+	public Integer insertaPresupuesto(MigracionPresupuesto mPresupuesto) {
+		Integer iResp = 1;		
+		String sql = "INSERT INTO presupuesto"
+				+ "           (id_meta"
+				+ "           ,id_clasificador_gasto"
+				+ "           ,ano_eje"
+				+ "           ,sec_ejec"
+				+ "           ,sec_func"
+				+ "           ,fuente_financ"
+				+ "           ,id_clasificador"
+				+ "           ,monto_inicial)"
+				+ "     VALUES"
+				+ "           (?,?,?,?,?,?,?,?)";
+		try {
+			jdbctemplate.update(sql, new Object[] {mPresupuesto.getId_meta(),mPresupuesto.getId_clasificador_gasto(), mPresupuesto.getAno_eje(),
+					mPresupuesto.getSec_ejec(), mPresupuesto.getSec_func(), mPresupuesto.getFuente_financ(), mPresupuesto.getId_clasificador(),
+					mPresupuesto.getMonto_inicial()});
 			iResp = 1;
 		} catch (Exception e) {			
 			System.out.println(e.getMessage());
