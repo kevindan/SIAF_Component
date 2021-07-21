@@ -94,27 +94,6 @@ SELECT * from expediente_secuencia WHERE ano_eje='2021' and sec_ejec='000996' an
   DBCC CHECKIDENT (certificado_compromiso_anual, RESEED, 0);
   DBCC CHECKIDENT (nota_modificatoria, RESEED, 0);
 
+--  Query para sacara la data de presupuesto
 
-  "SELECT "				
-				+ "ed.tipo_transaccion,"
-				+ "LTRIM(RTRIM(tt.descripcion)) tipo_transaccion_nombre,"
-				+ "ed.generica,"
-				+ "ge.descripcion generica_nombre,"
-				+ "ed.subgenerica,"
-				+ "sg.descripcion subgenerica_nombre,"
-				+ "ed.subgenerica_det,"
-				+ "sgd.descripcion subgenerica_det_nombre,"
-				+ "ed.especifica,"
-				+ "e.descripcion especifica_nombre,"
-				+ "ed.especifica_det,"
-				+ "ed.tipo_transaccion+'.'+ed.generica+'.'+ed.subgenerica+ ed.subgenerica_det+'.'+ed.especifica+ed.especifica_det as cod_clasificador , "
-				+ "ed.id_clasificador,"
-				+ "ed.descripcion as nombre_clasificador "	
-				+ "from especifica_det as ed "
-				+ "INNER JOIN tipo_transaccion as tt ON ed.ano_eje = tt.ano_eje AND ed.tipo_transaccion = tt.tipo_transaccion "
-				+ "INNER JOIN generica ge ON ed.ano_eje = ge.ano_eje AND ed.tipo_transaccion = ge.tipo_transaccion AND ed.generica = ge.generica "
-				+ "INNER JOIN subgenerica sg ON ed.ano_eje = sg.ano_eje AND ed.tipo_transaccion = sg.tipo_transaccion AND ed.generica = sg.generica AND ed.subgenerica = sg.subgenerica  "
-				+ "INNER JOIN subgenerica_det sgd ON ed.ano_eje = sgd.ano_eje AND ed.tipo_transaccion = sgd.tipo_transaccion AND ed.generica = sgd.generica AND ed.subgenerica = sgd.subgenerica AND ed.subgenerica_det = sgd.subgenerica_det "
-				+ "INNER JOIN especifica e ON ed.ano_eje = e.ano_eje AND ed.tipo_transaccion = e.tipo_transaccion AND ed.generica = e.generica AND ed.subgenerica = e.subgenerica and ed.subgenerica_det = e.subgenerica_det AND ed.especifica = e.especifica "
-				+ "WHERE ed.ano_eje = '"+ano_eje+"' "				
-				+ "ORDER BY ed.tipo_transaccion, ed.generica, ed.subgenerica, ed.subgenerica_det, ed.especifica, ed.especifica_det asc"
+  SELECT ano_eje, sec_ejec, sec_func, fuente_financ, id_clasificador, presupuesto FROM gasto WHERE ano_eje = '2021' AND sec_ejec = '000996'

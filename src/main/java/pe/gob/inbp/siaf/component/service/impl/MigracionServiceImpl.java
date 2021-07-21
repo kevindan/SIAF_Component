@@ -18,4 +18,14 @@ public class MigracionServiceImpl implements MigracionService {
 		return migracionDao.migrarCompromisoRegistroSiafModifacion(ano_eje, sec_ejec);
 	}
 
+	@Override
+	public GenericResponse migrarMetaClasificador(String ano_eje, String sec_ejec) {		
+		return migracionDao.migrarMetaClasificador(ano_eje, sec_ejec);
+	}
+
+	@Override
+	public GenericResponse migrarPresupuesto(String ano_eje, String sec_ejec) {		
+		return migracionDao.migrarPresupuesto(ano_eje, sec_ejec);
+	}
+
 }

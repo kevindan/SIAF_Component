@@ -21,7 +21,6 @@ import pe.gob.inbp.siaf.component.domain.MigracionMeta;
 import pe.gob.inbp.siaf.component.domain.MigracionNotaModificatoria;
 import pe.gob.inbp.siaf.component.domain.MigracionPresupuesto;
 import pe.gob.inbp.siaf.component.domain.MigracionRegistroSiaf;
-import pe.gob.inbp.siaf.component.domain.Presupuesto;
 import pe.gob.inbp.siaf.component.payload.GenericResponse;
 import pe.gob.inbp.siaf.component.rowmapper.MigracionPresupuestoRowMapper;
 import pe.gob.inbp.siaf.component.utility.AdoUtility;
@@ -54,7 +53,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		
 		//1. PROCESO DE CARGA DE LOS REGISTROS DE CERTIFICACIÓN
 		Integer cantCert = this.existeRegistros("certificado_compromiso_anual",ano_eje);
-		System.out.println("Cantidad de registros entontrados: "+cantCert);
+		System.out.println("Cantidad de registros encontrados: "+cantCert);
 		if(cantCert > 0) {
 			String secuencialCertificado = this.ultimoRegistroCertificacion(ano_eje);
 			System.out.println("Secuencial: "+secuencialCertificado);
@@ -79,7 +78,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		
 		//2. PROCESO DE CARGA DEL REGISTRO SIAF
 		Integer cantRegSiaf = this.existeRegistros("registro_siaf", ano_eje);
-		System.out.println("Cantidad de registros SIAF entontrados: "+cantRegSiaf);
+		System.out.println("Cantidad de registros SIAF encontrados: "+cantRegSiaf);
 		if(cantRegSiaf > 0) {
 			String secuencialSiaf = this.ultimoRegistroSiaf(ano_eje);
 			System.out.println("Secuencial SIAF: "+secuencialSiaf);
@@ -104,7 +103,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		
 		//3. PROCESO DE CARGA DE LAS NOTAS DE MODIFICACION
 		Integer cantNotaModif = this.existeRegistros("nota_modificatoria", ano_eje);
-		System.out.println("Cantidad de registros de nota modificatoria entontrados: "+cantNotaModif);
+		System.out.println("Cantidad de registros de nota modificatoria encontrados: "+cantNotaModif);
 		if(cantNotaModif > 0) {
 			String secuencialNotaModif = this.ultimoRegistroNotaModificacion(ano_eje);
 			System.out.println("Secuencial Nota Modificatoria: "+secuencialNotaModif);
@@ -127,9 +126,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 			errores.add(new Error("Error al consultar existencia de nota modificatoria"));
 		}
 		
-		//4. PROCESO DE CARGA DE LA TABLA PRESUPUESTO
-		//...Pendiente
-		
+	
 		if(errores.isEmpty()) {
 			response.setCode("0000");
 			response.setMessage("Se han cargado correctamente los registros en la base de datos");
@@ -150,7 +147,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		
 		//1. PROCESO DE CARGA DE LAS METAS
 		Integer cantMetas = this.existeRegistros("meta",ano_eje);
-		System.out.println("Cantidad de metas entontradas: "+cantMetas);
+		System.out.println("Cantidad de metas encontradas: "+cantMetas);
 		if(cantMetas > 0) {
 			String secuencialMetas = this.ultimoRegistroMeta(ano_eje);
 			System.out.println("Secuencial: "+secuencialMetas);
@@ -174,28 +171,28 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}
 		
 		//2. PROCESO DE CARGA DE LOS CLASIFICADORES
-		Integer cantRegSiaf = this.existeRegistros("registro_siaf", ano_eje);
-		System.out.println("Cantidad de registros SIAF entontrados: "+cantRegSiaf);
-		if(cantRegSiaf > 0) {
-			String secuencialSiaf = this.ultimoRegistroSiaf(ano_eje);
-			System.out.println("Secuencial SIAF: "+secuencialSiaf);
-			if(!secuencialSiaf.equals("9000")) {
-				Integer iRespRegSiaf = this.cargarRegistroSiaf(ano_eje, sec_ejec, secuencialSiaf);
-				System.out.println("Estado registro de registro SIAF: "+iRespRegSiaf);
-				if(iRespRegSiaf == -1) {
-					errores.add(new Error("Error al insertar registro de registro SIAF"));
+		Integer cantRegClasif = this.existeRegistros("clasificador", ano_eje);
+		System.out.println("Cantidad de clasificadores entontrados: "+cantRegClasif);
+		if(cantRegClasif > 0) {
+			String secuencialClasif = this.ultimoRegistroClasificador(ano_eje);
+			System.out.println("Secuencial Clasificador: "+secuencialClasif);
+			if(!secuencialClasif.equals("9000")) {
+				Integer iRespRegClasif = this.cargarClasificador(ano_eje, secuencialClasif);
+				System.out.println("Estado registro de clasificadores: "+iRespRegClasif);
+				if(iRespRegClasif == -1) {
+					errores.add(new Error("Error al insertar registro de Clasificadores"));
 				}
 			}else {
-				errores.add(new Error("Error al consultar el último secuencial de registros SIAF"));
+				errores.add(new Error("Error al consultar el último secuencial de Clasificador"));
 			}
-		}else if(cantRegSiaf == 0) {
-			Integer iRespRegSiaf = this.cargarRegistroSiaf(ano_eje, sec_ejec, null);
-			System.out.println("Estado registro de registro SIAF: "+iRespRegSiaf);
-			if(iRespRegSiaf == -1) {
-				errores.add(new Error("Error al insertar registro de registro SIAF"));
+		}else if(cantRegClasif == 0) {
+			Integer iRespRegClasif = this.cargarClasificador(ano_eje, null);
+			System.out.println("Estado registro de Clasificadores: "+iRespRegClasif);
+			if(iRespRegClasif == -1) {
+				errores.add(new Error("Error al insertar registro de Clasificadores"));
 			}			
-		}else if(cantRegSiaf < 0) {
-			errores.add(new Error("Error al consultar existencia de registro SIAF"));
+		}else if(cantRegClasif < 0) {
+			errores.add(new Error("Error al consultar existencia de Clasificadores"));
 		}
 		
 		// PREPARACIÓN DE LA RESPUESTA DEL METODO
@@ -206,6 +203,44 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}else {
 			response.setCode("0001");
 			response.setMessage("Se han cargado correctamente casi todas los registros de metas y clasiicadores, revisar la lista de errores");
+			response.setData(errores);			
+		}		
+		
+		return response;
+	}
+	
+	@Override
+	public GenericResponse migrarPresupuesto(String ano_eje, String sec_ejec) {
+		GenericResponse response = new GenericResponse();
+		List<Error> errores = new ArrayList<Error>();
+		
+		//1. PROCESO DE CARGA DE PRESUPUESTO PIA
+		Integer cantPresupuesto = this.existeRegistros("presupuesto",ano_eje);
+		System.out.println("Cantidad de presupuesto encontrados: "+cantPresupuesto);
+		if(cantPresupuesto > 0) {
+			Integer iRespPresupuesto = this.cargarRegistrosPresupuesto(ano_eje, sec_ejec, false);
+			System.out.println("Estado registro de las presupuesto: "+iRespPresupuesto);
+			if(iRespPresupuesto == -1) {
+				errores.add(new Error("Error al insertar registros de presupuesto"));
+			}			
+		}else if(cantPresupuesto == 0) {
+			Integer iRespPresupuesto = this.cargarRegistrosPresupuesto(ano_eje, sec_ejec, true);
+			System.out.println("Estado registro de las presupuesto: "+iRespPresupuesto);
+			if(iRespPresupuesto == -1) {
+				errores.add(new Error("Error al insertar registro de presupuesto"));
+			}			
+		}else if(cantPresupuesto < 0) {
+			errores.add(new Error("Error al consultar existencia de registros de presupuesto"));
+		}		
+		
+		// PREPARACIÓN DE LA RESPUESTA DEL METODO
+		if(errores.isEmpty()) {
+			response.setCode("0000");
+			response.setMessage("Se han cargado correctamente los resgistros de presupuesto");
+			response.setData(null);
+		}else {
+			response.setCode("0001");
+			response.setMessage("Se han cargado correctamente casi todas los registros de presupuesto, revisar la lista de errores");
 			response.setData(errores);			
 		}		
 		
@@ -602,7 +637,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				+ "INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION "
 				+ "INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA "
 				+ "INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA "
-				+ "INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
+				+ "LEFT OUTER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
 				+ "INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA "
 				+ "INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE "
 				+ "INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY "
@@ -637,7 +672,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				+ "INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION "
 				+ "INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA "
 				+ "INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA "
-				+ "INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
+				+ "LEFT OUTER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD "
 				+ "INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA "
 				+ "INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE "
 				+ "INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY "
@@ -680,7 +715,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				mMeta.setProd_proy(fs.getItem(13).getValue().getString().trim());
 				mMeta.setProd_proy_nombre(fs.getItem(14).getValue().getString().trim());
 				mMeta.setMeta(fs.getItem(15).getValue().getString().trim());
-				mMeta.setNombre_meta(fs.getItem(16).getValue().getString().trim());		
+				mMeta.setNombre_meta(fs.getItem(16).getValue().getString());		
 				mMeta.setFinalidad(fs.getItem(17).getValue().getString().trim());
 				mMeta.setUnidad_medida(fs.getItem(18).getValue().getString().trim());				
 				mMeta.setUnidad_medida_nombre(fs.getItem(19).getValue().getString().trim());
@@ -809,7 +844,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	
 	
 	@Override
-	public Integer cargarRegistrosPresupuesto(String ano_eje, String sec_ejec) {
+	public Integer cargarRegistrosPresupuesto(String ano_eje, String sec_ejec, boolean vacio) {		
 		Integer iResp = 1;
 		String connectionString = AdoUtility.setConnectionString(folderSiafDataMirror);
 		String query = "SELECT "
@@ -831,37 +866,98 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 			
 			rs.MoveFirst();
 			
-			while (!rs.getEOF()) {
-				MigracionClasificador mClasificador = new MigracionClasificador();
-			
-				mClasificador.setAno_eje(fs.getItem(0).getValue().getString().trim());
-				mClasificador.setTipo_transaccion(fs.getItem(1).getValue().getString().trim());
-				mClasificador.setTipo_transaccion_nombre(fs.getItem(2).getValue().getString().trim());
-				mClasificador.setGenerica(fs.getItem(3).getValue().getString().trim());
-				mClasificador.setGenerica_nombre(fs.getItem(4).getValue().getString().trim());
-				mClasificador.setSubgenerica(fs.getItem(5).getValue().getString().trim());
-				mClasificador.setSubgenerica_nombre(fs.getItem(6).getValue().getString().trim());
-				mClasificador.setSubgenerica_det(fs.getItem(7).getValue().getString().trim());
-				mClasificador.setSubgenerica_det_nombre(fs.getItem(8).getValue().getString().trim());
-				mClasificador.setEspecifica(fs.getItem(9).getValue().getString().trim());
-				mClasificador.setEspecifica_nombre(fs.getItem(10).getValue().getString().trim());
-				mClasificador.setEspecifica_det(fs.getItem(11).getValue().getString().trim());
-				mClasificador.setCod_clasificador(fs.getItem(12).getValue().getString().trim());
-				mClasificador.setId_clasificador(fs.getItem(13).getValue().getString().trim());
-				mClasificador.setNombre_clasificador(fs.getItem(14).getValue().getString().trim());
+			if(vacio == true) {
+
+				while (!rs.getEOF()) {
+					MigracionPresupuesto mPresupuesto = new MigracionPresupuesto();
+								
+					mPresupuesto.setAno_eje(fs.getItem(0).getValue().getString().trim());
+					mPresupuesto.setSec_ejec(fs.getItem(1).getValue().getString().trim());
+					mPresupuesto.setSec_func(fs.getItem(2).getValue().getString().trim());
+					mPresupuesto.setFuente_financ(fs.getItem(3).getValue().getString().trim());
+					mPresupuesto.setId_clasificador(fs.getItem(4).getValue().getString().trim());
+					mPresupuesto.setMonto_inicial(fs.getItem(5).getValue().getDecimal());
+					
+					Integer idMeta = this.getIdMeta(ano_eje, sec_ejec, mPresupuesto.getSec_func()); 
+					
+					if(idMeta != null) {
+						mPresupuesto.setId_meta(Long.valueOf(idMeta));
+					}else {
+						iResp = 0;
+						return iResp;
+					}
+					
+					Integer idClasificadorGasto = this.getIdClasificadorGasto(ano_eje, mPresupuesto.getId_clasificador()); 
+					
+					if(idClasificadorGasto != null) {
+						mPresupuesto.setId_clasificador_gasto(Long.valueOf(idClasificadorGasto));
+					}else {
+						iResp = 0;
+						return iResp;
+					}
+								
+					iResp = this.insertaPresupuesto(mPresupuesto);
+					if(iResp != 1) {
+						return iResp;
+					}					
+														
+					rs.MoveNext();
+				}				
 				
-				iResp = this.insertaClasificador(mClasificador);
-				if(iResp != 1) {
-					return iResp;
-				}					
-													
-				rs.MoveNext();
-			}	
+			}else {
+				List<MigracionPresupuesto> listaPresuspuesto = this.listarPresupuesto(ano_eje, sec_ejec);
+				
+				while (!rs.getEOF()) {
+					MigracionPresupuesto mPresupuesto = new MigracionPresupuesto();
+					
+					mPresupuesto.setAno_eje(fs.getItem(0).getValue().getString().trim());
+					mPresupuesto.setSec_ejec(fs.getItem(1).getValue().getString().trim());
+					mPresupuesto.setSec_func(fs.getItem(2).getValue().getString().trim());
+					mPresupuesto.setFuente_financ(fs.getItem(3).getValue().getString().trim());
+					mPresupuesto.setId_clasificador(fs.getItem(4).getValue().getString().trim());
+					mPresupuesto.setMonto_inicial(fs.getItem(5).getValue().getDecimal());
+					
+					Integer idMeta = this.getIdMeta(ano_eje, sec_ejec, mPresupuesto.getSec_func()); 
+					
+					if(idMeta != null) {
+						mPresupuesto.setId_meta(Long.valueOf(idMeta));
+					}else {
+						iResp = 0;
+						return iResp;
+					}
+					
+					Integer idClasificadorGasto = this.getIdClasificadorGasto(ano_eje, mPresupuesto.getId_clasificador()); 
+					
+					if(idClasificadorGasto != null) {
+						mPresupuesto.setId_clasificador_gasto(Long.valueOf(idClasificadorGasto));
+					}else {
+						iResp = 0;
+						return iResp;
+					}
+					
+					for(MigracionPresupuesto presupuesto: listaPresuspuesto) {
+						if(!(presupuesto.getSec_func().equals(mPresupuesto.getSec_func()) && 
+								presupuesto.getFuente_financ().equals(mPresupuesto.getFuente_financ()) &&
+								presupuesto.getId_clasificador().equals(mPresupuesto.getId_clasificador()))) {
+						
+							iResp = this.insertaPresupuesto(mPresupuesto);
+							if(iResp != 1) {
+								return iResp;
+							}
+							
+						}
+					}					
+														
+					rs.MoveNext();
+				}
+			}
+			
+	
 		}	
 		rs.Close();
 		return iResp;
 	}
-	
+	 
 	public Integer insertaCertificacion(MigracionCertificado certificado) {
 		Integer iResp = 1;		
 		String sql = "INSERT INTO certificado_compromiso_anual("
@@ -948,7 +1044,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				+ "           ,sec_func"
 				+ "           ,anulacion"
 				+ "           ,credito)"
-				+ "     VALUES"
+				+ "     VALUES "
 				+ "           (?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			jdbctemplate.update(sql, new Object[] {notaModificatoria.getAno_eje(),notaModificatoria.getSec_ejec(),notaModificatoria.getSec_nota(),
@@ -1023,7 +1119,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				+ "           ,tipo_transaccion"
 				+ "           ,tipo_transaccion_nombre)"
 				+ "     VALUES "
-				+ "           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+				+ "           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 		try {
 			jdbctemplate.update(sql, new Object[] {migracionClasificador.getAno_eje(),migracionClasificador.getCod_clasificador(),migracionClasificador.getEspecifica(),
 					migracionClasificador.getEspecifica_det(), migracionClasificador.getEspecifica_nombre(), migracionClasificador.getGenerica(), migracionClasificador.getGenerica_nombre(),
@@ -1152,10 +1248,10 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	}
 	
 	
-	public Integer getIdClasificadorGasto(String ano_eje, String sec_ejec, String id_clasificador) {
+	public Integer getIdClasificadorGasto(String ano_eje, String id_clasificador) {
 		Integer resp = 0;
 		try {
-			String query = "select id_clasificador_gasto from clasificador where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and id_clasificador = '"+id_clasificador+"'";
+			String query = "select id_clasificador_gasto from clasificador where ano_eje = '"+ano_eje+"' and id_clasificador = '"+id_clasificador+"'";
 			resp = getJdbcTemplate().queryForObject(query, Integer.class);
 			if(resp == null) {
 				resp = 0;
@@ -1170,8 +1266,10 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	public Integer getIdMeta(String ano_eje, String sec_ejec, String sec_func) {
 		Integer resp = 0;
 		try {
-			String query = "select id_meta from meta where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and sec_ejec = '"+sec_func+"'";
+			String query = "select id_meta from meta where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and sec_func = '"+sec_func+"'";
+			System.out.println(query);
 			resp = getJdbcTemplate().queryForObject(query, Integer.class);
+			System.out.println("Resultado del Id Meta : "+resp);
 			if(resp == null) {
 				resp = 0;
 			}
@@ -1194,6 +1292,5 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		}
 		return lstPresupuesto;
 	}
-
 	
 }

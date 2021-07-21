@@ -17,11 +17,22 @@ public class MigracionController {
 	@Autowired
 	private MigracionService migracionService;
 	
-	@GetMapping("/migarTablas/{ano_eje}/{sec_ejec}")
-	public GenericResponse migrarRegistros(@PathVariable ("ano_eje") String ano_eje, @PathVariable ("sec_ejec") String sec_ejec) {		
+	@GetMapping("/migarCertificacionRegistroSiaf/{ano_eje}/{sec_ejec}")
+	public GenericResponse migrarCertificacionRegistroSiaf(@PathVariable ("ano_eje") String ano_eje, @PathVariable ("sec_ejec") String sec_ejec) {		
 		
 		return migracionService.migrarCompromisoRegistroSiafModifacion(ano_eje, sec_ejec);
-	}	
+	}
+	
+	@GetMapping("/migarMetasClasificadores/{ano_eje}/{sec_ejec}")
+	public GenericResponse migrarClasificadores(@PathVariable ("ano_eje") String ano_eje, @PathVariable ("sec_ejec") String sec_ejec) {		
+		
+		return migracionService.migrarMetaClasificador(ano_eje, sec_ejec);
+	}
 
-
+	@GetMapping("/migarRegistroPresupuesto/{ano_eje}/{sec_ejec}")
+	public GenericResponse migrarRegistroPresupuesto(@PathVariable ("ano_eje") String ano_eje, @PathVariable ("sec_ejec") String sec_ejec) {		
+		
+		return migracionService.migrarPresupuesto(ano_eje, sec_ejec);
+	}
+	
 }
