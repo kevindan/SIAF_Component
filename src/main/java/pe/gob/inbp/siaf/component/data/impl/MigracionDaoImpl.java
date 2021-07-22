@@ -213,34 +213,40 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	public GenericResponse migrarPresupuesto(String ano_eje, String sec_ejec) {
 		GenericResponse response = new GenericResponse();
 		List<Error> errores = new ArrayList<Error>();
-		
-		//1. PROCESO DE CARGA DE PRESUPUESTO PIA
-		Integer cantPresupuesto = this.existeRegistros("presupuesto",ano_eje);
-		System.out.println("Cantidad de presupuesto encontrados: "+cantPresupuesto);
-		if(cantPresupuesto > 0) {
-			Integer iRespPresupuesto = this.cargarRegistrosPresupuesto(ano_eje, sec_ejec, false);
-			System.out.println("Estado registro de las presupuesto: "+iRespPresupuesto);
-			if(iRespPresupuesto == -1) {
-				errores.add(new Error("Error al insertar registros de presupuesto"));
-			}			
-		}else if(cantPresupuesto == 0) {
-			Integer iRespPresupuesto = this.cargarRegistrosPresupuesto(ano_eje, sec_ejec, true);
-			System.out.println("Estado registro de las presupuesto: "+iRespPresupuesto);
-			if(iRespPresupuesto == -1) {
-				errores.add(new Error("Error al insertar registro de presupuesto"));
-			}			
-		}else if(cantPresupuesto < 0) {
-			errores.add(new Error("Error al consultar existencia de registros de presupuesto"));
-		}		
+		Integer cantMetas = this.existeRegistros("meta", ano_eje);
+		Integer cantClasificadores = this.existeRegistros("clasificador", ano_eje);
+		//1. PROCESO DE CARGA DE PRESUPUESTO PIA		
+		if(cantMetas > 0 && cantClasificadores > 0) {
+			Integer cantPresupuesto = this.existeRegistros("presupuesto",ano_eje);
+			System.out.println("Cantidad de presupuesto encontrados: "+cantPresupuesto);
+			if(cantPresupuesto > 0) {
+				Integer iRespPresupuesto = this.cargarRegistrosPresupuesto(ano_eje, sec_ejec, false);
+				System.out.println("Estado registro de las presupuesto: "+iRespPresupuesto);
+				if(iRespPresupuesto == -1) {
+					errores.add(new Error("Error al insertar registros de presupuesto"));
+				}			
+			}else if(cantPresupuesto == 0) {
+				Integer iRespPresupuesto = this.cargarRegistrosPresupuesto(ano_eje, sec_ejec, true);
+				System.out.println("Estado registro de las presupuesto: "+iRespPresupuesto);
+				if(iRespPresupuesto == -1) {
+					System.out.println("iRespPresupuesto : "+iRespPresupuesto);
+					errores.add(new Error("Error al insertar registro de presupuesto"));
+				}			
+			}else if(cantPresupuesto < 0) {
+				errores.add(new Error("Error al consultar existencia de registros de presupuesto"));
+			}
+		}else {
+			errores.add(new Error("Las tablas meta y clasificador deben contener registros para caragr la tabla de presupuesto incial"));
+		}
 		
 		// PREPARACIÓN DE LA RESPUESTA DEL METODO
 		if(errores.isEmpty()) {
 			response.setCode("0000");
-			response.setMessage("Se han cargado correctamente los resgistros de presupuesto");
+			response.setMessage("Se han cargado correctamente los registros de presupuesto");
 			response.setData(null);
 		}else {
-			response.setCode("0001");
-			response.setMessage("Se han cargado correctamente casi todas los registros de presupuesto, revisar la lista de errores");
+			response.setCode("9000");
+			response.setMessage("Hubo errores en la carga de presupuesto");
 			response.setData(errores);			
 		}		
 		
@@ -715,7 +721,11 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				mMeta.setProd_proy(fs.getItem(13).getValue().getString().trim());
 				mMeta.setProd_proy_nombre(fs.getItem(14).getValue().getString().trim());
 				mMeta.setMeta(fs.getItem(15).getValue().getString().trim());
-				mMeta.setNombre_meta(fs.getItem(16).getValue().getString());		
+				if(fs.getItem(16).getValue().getString() != null) {
+					mMeta.setNombre_meta(fs.getItem(16).getValue().getString());
+				}else {
+					mMeta.setNombre_meta("SIN DESCRIPCIÓN");
+				}						
 				mMeta.setFinalidad(fs.getItem(17).getValue().getString().trim());
 				mMeta.setUnidad_medida(fs.getItem(18).getValue().getString().trim());				
 				mMeta.setUnidad_medida_nombre(fs.getItem(19).getValue().getString().trim());
@@ -867,7 +877,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 			rs.MoveFirst();
 			
 			if(vacio == true) {
-
+				
 				while (!rs.getEOF()) {
 					MigracionPresupuesto mPresupuesto = new MigracionPresupuesto();
 								
@@ -880,7 +890,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 					
 					Integer idMeta = this.getIdMeta(ano_eje, sec_ejec, mPresupuesto.getSec_func()); 
 					
-					if(idMeta != null) {
+					if(!(idMeta == -1 || idMeta == null)) {
 						mPresupuesto.setId_meta(Long.valueOf(idMeta));
 					}else {
 						iResp = 0;
@@ -889,7 +899,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 					
 					Integer idClasificadorGasto = this.getIdClasificadorGasto(ano_eje, mPresupuesto.getId_clasificador()); 
 					
-					if(idClasificadorGasto != null) {
+					if(!(idClasificadorGasto == -1 || idClasificadorGasto == null)) {
 						mPresupuesto.setId_clasificador_gasto(Long.valueOf(idClasificadorGasto));
 					}else {
 						iResp = 0;
@@ -905,9 +915,11 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				}				
 				
 			}else {
+				System.out.println("Flujo de datos existentes en presupuesto");
 				List<MigracionPresupuesto> listaPresuspuesto = this.listarPresupuesto(ano_eje, sec_ejec);
-				
+				System.out.println("Cantidad de las lista de presupuesto : "+listaPresuspuesto.size());
 				while (!rs.getEOF()) {
+					boolean existe = false;
 					MigracionPresupuesto mPresupuesto = new MigracionPresupuesto();
 					
 					mPresupuesto.setAno_eje(fs.getItem(0).getValue().getString().trim());
@@ -919,7 +931,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 					
 					Integer idMeta = this.getIdMeta(ano_eje, sec_ejec, mPresupuesto.getSec_func()); 
 					
-					if(idMeta != null) {
+					if(!(idMeta == -1 || idMeta == null) ) {
 						mPresupuesto.setId_meta(Long.valueOf(idMeta));
 					}else {
 						iResp = 0;
@@ -928,7 +940,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 					
 					Integer idClasificadorGasto = this.getIdClasificadorGasto(ano_eje, mPresupuesto.getId_clasificador()); 
 					
-					if(idClasificadorGasto != null) {
+					if(!(idClasificadorGasto == -1 || idClasificadorGasto == null)) {
 						mPresupuesto.setId_clasificador_gasto(Long.valueOf(idClasificadorGasto));
 					}else {
 						iResp = 0;
@@ -936,22 +948,23 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 					}
 					
 					for(MigracionPresupuesto presupuesto: listaPresuspuesto) {
-						if(!(presupuesto.getSec_func().equals(mPresupuesto.getSec_func()) && 
-								presupuesto.getFuente_financ().equals(mPresupuesto.getFuente_financ()) &&
-								presupuesto.getId_clasificador().equals(mPresupuesto.getId_clasificador()))) {
+						if(presupuesto.getSec_func().equals(mPresupuesto.getSec_func()) && presupuesto.getFuente_financ().equals(mPresupuesto.getFuente_financ()) && presupuesto.getId_clasificador().equals(mPresupuesto.getId_clasificador())) {
+							existe = true;
+							break;
+						}	
 						
-							iResp = this.insertaPresupuesto(mPresupuesto);
-							if(iResp != 1) {
-								return iResp;
-							}
-							
+					}
+					
+					if(existe == false) {
+						iResp = this.insertaPresupuesto(mPresupuesto);
+						if(iResp != 1) {
+							return iResp;
 						}
-					}					
+					}
 														
 					rs.MoveNext();
 				}
-			}
-			
+			}			
 	
 		}	
 		rs.Close();
@@ -1252,7 +1265,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 		Integer resp = 0;
 		try {
 			String query = "select id_clasificador_gasto from clasificador where ano_eje = '"+ano_eje+"' and id_clasificador = '"+id_clasificador+"'";
-			resp = getJdbcTemplate().queryForObject(query, Integer.class);
+			resp = getJdbcTemplate().queryForObject(query, Integer.class);			
 			if(resp == null) {
 				resp = 0;
 			}
@@ -1266,10 +1279,8 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 	public Integer getIdMeta(String ano_eje, String sec_ejec, String sec_func) {
 		Integer resp = 0;
 		try {
-			String query = "select id_meta from meta where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and sec_func = '"+sec_func+"'";
-			System.out.println(query);
+			String query = "select id_meta from meta where ano_eje = '"+ano_eje+"' and sec_ejec = '"+sec_ejec+"' and sec_func = '"+sec_func+"'";			
 			resp = getJdbcTemplate().queryForObject(query, Integer.class);
-			System.out.println("Resultado del Id Meta : "+resp);
 			if(resp == null) {
 				resp = 0;
 			}

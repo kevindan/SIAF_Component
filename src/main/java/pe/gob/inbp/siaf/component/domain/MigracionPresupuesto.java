@@ -67,22 +67,6 @@ public class MigracionPresupuesto implements Serializable {
 		this.ano_eje = ano_eje;
 	}
 
-	public String getFuente_financ() {
-		return fuente_financ;
-	}
-
-	public void setFuente_financ(String fuente_financ) {
-		this.fuente_financ = fuente_financ;
-	}
-
-	public BigDecimal getMonto_inicial() {
-		return monto_inicial;
-	}
-
-	public void setMonto_inicial(BigDecimal monto_inicial) {
-		this.monto_inicial = monto_inicial;
-	}
-
 	public String getSec_ejec() {
 		return sec_ejec;
 	}
@@ -99,6 +83,14 @@ public class MigracionPresupuesto implements Serializable {
 		this.sec_func = sec_func;
 	}
 
+	public String getFuente_financ() {
+		return fuente_financ;
+	}
+
+	public void setFuente_financ(String fuente_financ) {
+		this.fuente_financ = fuente_financ;
+	}
+
 	public String getId_clasificador() {
 		return id_clasificador;
 	}
@@ -107,11 +99,20 @@ public class MigracionPresupuesto implements Serializable {
 		this.id_clasificador = id_clasificador;
 	}
 
+	public BigDecimal getMonto_inicial() {
+		return monto_inicial;
+	}
+
+	public void setMonto_inicial(BigDecimal monto_inicial) {
+		this.monto_inicial = monto_inicial;
+	}
+
 	@Override
 	public String toString() {
 		return "MigracionPresupuesto [id_presupuesto=" + id_presupuesto + ", id_meta=" + id_meta
-				+ ", id_clasificador_gasto=" + id_clasificador_gasto + ", ano_eje=" + ano_eje + ", fuente_financ="
-				+ fuente_financ + ", monto_inicial=" + monto_inicial + "]";
+				+ ", id_clasificador_gasto=" + id_clasificador_gasto + ", ano_eje=" + ano_eje + ", sec_ejec=" + sec_ejec
+				+ ", sec_func=" + sec_func + ", fuente_financ=" + fuente_financ + ", id_clasificador=" + id_clasificador
+				+ ", monto_inicial=" + monto_inicial + "]";
 	}
 
 }

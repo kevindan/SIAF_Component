@@ -97,3 +97,30 @@ SELECT * from expediente_secuencia WHERE ano_eje='2021' and sec_ejec='000996' an
 --  Query para sacara la data de presupuesto
 
   SELECT ano_eje, sec_ejec, sec_func, fuente_financ, id_clasificador, presupuesto FROM gasto WHERE ano_eje = '2021' AND sec_ejec = '000996'
+
+  SELECT A.ano_eje,A.sec_ejec,A.sec_func,A.PROGRAMA_PPTO programa_ppto,PPN.NOMBRE AS programa_ppto_nombre,A.funcion,LTRIM(RTRIM(B.NOMBRE)) funcion_nombre,A.programa as division_func,LTRIM(RTRIM(P.NOMBRE)) division_func_nombre, A.sub_programa as grupo_func, LTRIM(RTRIM(S.NOMBRE)) grupo_func_nombre, A.componente as act_ai_obr, C.nombre as act_ai_obr_nombre, A.act_proy as prod_proy, ap.nombre as prod_proy_nombre, A.meta, LTRIM(RTRIM(F.NOMBRE)) nombre_meta, A.finalidad, A.unidad_medida, LTRIM(RTRIM(U.NOMBRE)) unidad_medida_nombre FROM META A INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY INNER JOIN PROGRAMA_PPTO_NOMBRE AS PPN ON A.ANO_EJE = PPN.ANO_EJE AND A.PROGRAMA_PPTO = PPN.PROGRAMA_PPTO WHERE A.ANO_EJE='2021' AND A.SEC_EJEC='000996' ORDER BY A.ano_eje,A.sec_ejec,A.sec_func asc
+
+SELECT a.ano_eje,a.sec_ejec,a.sec_func,a.funcion,LTRIM(RTRIM(f.NOMBRE)) funcion_nombre from meta as a INNER join funcion as f ON a.ano_eje = f.ano_eje AND a.funcion = f.funcion WHERE a.ano_eje = '2021' AND a.sec_ejec = '000996' ORDER BY a.sec_func asc
+
+
+
+
+ SELECT A.ano_eje,A.sec_ejec,A.sec_func,A.PROGRAMA_PPTO programa_ppto,PPN.NOMBRE AS programa_ppto_nombre,A.funcion,LTRIM(RTRIM(B.NOMBRE)) funcion_nombre,A.programa as division_func,LTRIM(RTRIM(P.NOMBRE)) division_func_nombre, A.sub_programa as grupo_func, LTRIM(RTRIM(S.NOMBRE)) grupo_func_nombre, A.componente as act_ai_obr, C.nombre as act_ai_obr_nombre, A.act_proy as prod_proy, ap.nombre as prod_proy_nombre, A.meta, LTRIM(RTRIM(F.NOMBRE)) nombre_meta, A.finalidad, A.unidad_medida, LTRIM(RTRIM(U.NOMBRE)) unidad_medida_nombre 
+ FROM META A 
+ INNER JOIN FUNCION B ON A.ANO_EJE=B.ANO_EJE AND A.FUNCION=B.FUNCION ==> 03
+ INNER JOIN PROGRAMA_NOMBRE P on A.ANO_EJE=P.ANO_EJE AND A.PROGRAMA=P.PROGRAMA ==> 006
+ INNER JOIN SUB_PROGRAMA_NOMBRE S on A.ANO_EJE=S.ANO_EJE AND A.SUB_PROGRAMA=S.SUB_PROGRAMA  ==> 0008
+ INNER JOIN FINALIDAD F on A.ANO_EJE=F.ANO_EJE AND A.FINALIDAD=F.FINALIDAD  ==> 0316055
+ INNER JOIN UNIDAD_MEDIDA U ON A.UNIDAD_MEDIDA = U.UNIDAD_MEDIDA  ==> 00001
+ INNER JOIN componente_nombre as C ON A.ANO_EJE = C.ANO_EJE AND A.COMPONENTE = C.COMPONENTE ==> 5006373
+ INNER JOIN act_proy_nombre as ap ON A.ANO_EJE = AP.ANO_EJE AND A.ACT_PROY = AP.ACT_PROY ==> 3999999
+ INNER JOIN PROGRAMA_PPTO_NOMBRE AS PPN ON A.ANO_EJE = PPN.ANO_EJE AND A.PROGRAMA_PPTO = PPN.PROGRAMA_PPTO ==> 9002
+
+
+ WHERE A.ANO_EJE='2021' AND A.SEC_EJEC='000996' ORDER BY A.ano_eje,A.sec_ejec,A.sec_func asc
+
+
+----------------------------------------
+
+
+
