@@ -722,7 +722,7 @@ public class MigracionDaoImpl extends JdbcDaoSupport implements MigracionDao {
 				mMeta.setProd_proy_nombre(fs.getItem(14).getValue().getString().trim());
 				mMeta.setMeta(fs.getItem(15).getValue().getString().trim());
 				if(fs.getItem(16).getValue().getString() != null) {
-					mMeta.setNombre_meta(fs.getItem(16).getValue().getString());
+					mMeta.setNombre_meta(fs.getItem(16).getValue().getString().trim());
 				}else {
 					mMeta.setNombre_meta("SIN DESCRIPCIÓN");
 				}						
